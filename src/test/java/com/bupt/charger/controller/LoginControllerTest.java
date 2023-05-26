@@ -1,5 +1,6 @@
 package com.bupt.charger.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -8,6 +9,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.net.URL;
+import java.util.Map;
 
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,9 +18,9 @@ import static org.junit.jupiter.api.Assertions.*;
 */
 class LoginControllerTest {
 
-    private static final String LOGIN_URL = "http://localhost:8080/login";
-    private static final String USERNAME = "testUser";
-    private static final String PASSWORD = "testPassword";
+    private static final String LOGIN_URL = "http://localhost:6480/login";
+    private static final String USERNAME = "test";
+    private static final String PASSWORD = "test";
 
     @Test
     void test(){
@@ -28,7 +30,8 @@ class LoginControllerTest {
     void testLogin(String username, String password) {
         try {
             // 设置请求体参数
-            String requestBody = "username=" + username + "&password=" + password;
+            ObjectMapper mapper = new ObjectMapper();
+            String requestBody = mapper.writeValueAsString(Map.of("username", username, "password", password));
             byte[] requestBodyBytes = requestBody.getBytes(StandardCharsets.UTF_8);
 
             // 发送请求并获取响应
@@ -43,7 +46,7 @@ class LoginControllerTest {
         HttpURLConnection connection = (HttpURLConnection) apiUrl.openConnection();
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Content-Length", String.valueOf(requestBodyBytes.length));
 
         try (OutputStream outputStream = connection.getOutputStream()) {
