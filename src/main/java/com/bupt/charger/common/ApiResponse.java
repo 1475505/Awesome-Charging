@@ -13,11 +13,12 @@ import lombok.RequiredArgsConstructor;
 public class ApiResponse {
     private int code;
     private String msg;
-    private Object data;
 
-    public ApiResponse(int i, String message) {
-        setCode(i);
-        setMsg(message);
+    public ApiResponse(int code, String msg) {
+        this.code = code;
+        this.msg = msg;
     }
+
+    private Object data;
 }
 

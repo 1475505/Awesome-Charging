@@ -27,7 +27,7 @@ public class SignupController {
             userService.registerUser(registrationRequest);
             return ResponseEntity.ok().body(new ApiResponse(0, "请求成功"));
         } catch (RegistrationException e) {
-            return ResponseEntity.badRequest().body(new ApiResponse(1, e.getMessage()));
+            return ResponseEntity.ok().body(new ApiResponse(1, e.getMessage()));
         }
     }
 }

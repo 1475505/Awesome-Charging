@@ -10,6 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import com.bupt.charger.TestUtils;
 
 /**
  * @author ll （ created: 2023-05-26 20:01 )
@@ -22,8 +23,9 @@ class SignupControllerTest {
 
 
     @Test
-    void test(){
+    void test() {
         testLogin(USERNAME, PASSWORD, CAR_ID);
+        testLogin(USERNAME, "already", CAR_ID);
     }
 
     void testLogin(String username, String password, String car_id) {
@@ -34,37 +36,10 @@ class SignupControllerTest {
             byte[] requestBodyBytes = requestBody.getBytes(StandardCharsets.UTF_8);
 
             // 发送请求并获取响应
-            String responseBody = sendPostRequest(SIGNUP_URL, requestBodyBytes);
+            String responseBody = TestUtils.sendPostRequest(SIGNUP_URL, requestBodyBytes);
+            System.out.println(responseBody);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private String sendPostRequest(String url, byte[] requestBodyBytes) throws Exception {
-        URL apiUrl = new URL(url);
-        HttpURLConnection connection = (HttpURLConnection) apiUrl.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Content-Length", String.valueOf(requestBodyBytes.length));
-
-        try (OutputStream outputStream = connection.getOutputStream()) {
-            outputStream.write(requestBodyBytes);
-            outputStream.flush();
-        }
-
-        // 获取响应
-        int responseCode = connection.getResponseCode();
-        System.out.println("Response Code: " + responseCode);
-
-        // 读取响应内容
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            return response.toString();
         }
     }
 }

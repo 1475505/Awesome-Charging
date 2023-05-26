@@ -1,5 +1,6 @@
 package com.bupt.charger.controller;
 
+import com.bupt.charger.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,7 @@ class LoginControllerTest {
     @Test
     void test(){
         testLogin(USERNAME, PASSWORD);
+        testLogin(USERNAME, "wrong_password");
     }
     
     void testLogin(String username, String password) {
@@ -35,37 +37,10 @@ class LoginControllerTest {
             byte[] requestBodyBytes = requestBody.getBytes(StandardCharsets.UTF_8);
 
             // 发送请求并获取响应
-            String responseBody = sendPostRequest(LOGIN_URL, requestBodyBytes);
+            String responseBody = TestUtils.sendPostRequest(LOGIN_URL, requestBodyBytes);
+            System.out.println(responseBody);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private String sendPostRequest(String url, byte[] requestBodyBytes) throws Exception {
-        URL apiUrl = new URL(url);
-        HttpURLConnection connection = (HttpURLConnection) apiUrl.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Content-Length", String.valueOf(requestBodyBytes.length));
-
-        try (OutputStream outputStream = connection.getOutputStream()) {
-            outputStream.write(requestBodyBytes);
-            outputStream.flush();
-        }
-
-        // 获取响应
-        int responseCode = connection.getResponseCode();
-        System.out.println("Response Code: " + responseCode);
-
-        // 读取响应内容
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            return response.toString();
         }
     }
 }
