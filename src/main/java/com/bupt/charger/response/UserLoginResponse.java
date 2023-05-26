@@ -1,4 +1,4 @@
-package com.bupt.charger.common;
+package com.bupt.charger.response;
 
 import lombok.Data;
 /**

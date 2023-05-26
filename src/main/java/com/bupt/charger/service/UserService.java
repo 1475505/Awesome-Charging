@@ -1,6 +1,6 @@
 package com.bupt.charger.service;
 
-import com.bupt.charger.common.UserLoginResponse;
+import com.bupt.charger.response.UserLoginResponse;
 import com.bupt.charger.entity.User;
 import com.bupt.charger.exception.RegistrationException;
 import com.bupt.charger.repository.UserRepository;

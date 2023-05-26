@@ -1,7 +1,7 @@
 package com.bupt.charger.controller;
 
 import com.bupt.charger.common.ApiResponse;
-import com.bupt.charger.common.UserLoginResponse;
+import com.bupt.charger.response.UserLoginResponse;
 import com.bupt.charger.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

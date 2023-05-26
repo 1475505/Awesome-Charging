@@ -2,7 +2,6 @@ package com.bupt.charger.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
