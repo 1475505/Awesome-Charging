@@ -22,7 +22,7 @@ public class User {
     @NonNull
     private String password;
 
-    private String car_id;
+    private String carId;
 
     public User() {}
 
