@@ -19,7 +19,7 @@ public class SwaggerConfig {
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.example.api.controllers"))
+                .apis(RequestHandlerSelectors.basePackage("com.bupt.charger.controller"))
                 .paths(PathSelectors.any())
                 .build();
     }
