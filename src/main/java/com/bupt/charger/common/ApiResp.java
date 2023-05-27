@@ -10,11 +10,11 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
-public class ApiResponse {
+public class ApiResp {
     private int code;
     private String msg;
 
-    public ApiResponse(int code, String msg) {
+    public ApiResp(int code, String msg) {
         this.code = code;
         this.msg = msg;
     }
