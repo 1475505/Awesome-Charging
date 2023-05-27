@@ -44,7 +44,7 @@ public class UserChargeController {
         }
     }
 
-    @PostMapping("modifyMode")
+    @PostMapping("chMode")
     public ResponseEntity<Object> modifyMode(@RequestBody ModifyChargeModeRequest request) {
         try {
             chargeService.ModifyRequestMode(request);

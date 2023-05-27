@@ -12,9 +12,9 @@ import java.util.List;
  */
 @Repository
 public interface ChargeReqRepository extends JpaRepository<ChargeRequest, Long> {
-    ChargeRequest findTopByCarIdAndStatusNotOrderByCreatedAtDesc(String carId, int status);
+    ChargeRequest findTopByCarIdAndStatusNotOrderByCreatedAtDesc(String carId, ChargeRequest.Status status);
 
     default ChargeRequest getLatestUnDoneRequests(String carId) {
-        return this.findTopByCarIdAndStatusNotOrderByCreatedAtDesc(carId, ChargeRequest.Status.DONE.ordinal());
+        return this.findTopByCarIdAndStatusNotOrderByCreatedAtDesc(carId, ChargeRequest.Status.DONE);
     }
 }

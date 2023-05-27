@@ -72,13 +72,14 @@ public class ChargeService {
         }
 
         ChargeRequest chargeRequest = chargeReqRepository.getLatestUnDoneRequests(carId);
-
         if (chargeRequest == null) {
             throw new ApiException("没有符合条件的请求，可能是没有未完成的充电请求");
         }
 
         chargeRequest.setRequestAmount(request.getRequestAmount());
         chargeReqRepository.save(chargeRequest);
+
+        //TODO
     }
 
     public void ModifyRequestMode(ModifyChargeModeRequest request) {
@@ -100,5 +101,7 @@ public class ChargeService {
 
         chargeRequest.setRequestMode(request.getRequestMode());
         chargeReqRepository.save(chargeRequest);
+
+        //TODO
     }
 }

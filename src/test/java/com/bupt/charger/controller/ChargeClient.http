@@ -9,10 +9,19 @@ Content-Type: application/json
 }
 
 ### modify charge amount
-POST http://localhost:6480/user/request
+POST http://localhost:6480/user/modifyAmount
 Content-Type: application/json
 
 {
   "car_id": "test",
   "request_amount": 648.88
+}
+
+### modify charge mode
+POST http://localhost:6480/user/chMode
+Content-Type: application/json
+
+{
+  "car_id": "test",
+  "request_mode": "quick"
 }

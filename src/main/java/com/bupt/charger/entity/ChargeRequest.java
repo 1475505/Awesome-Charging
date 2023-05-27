@@ -28,7 +28,7 @@ public class ChargeRequest {
     private String carId;
 
     @Enumerated(EnumType.ORDINAL)
-    private Status carPosition = Status.INIT;
+    private Status status = Status.INIT;
 
     public enum Status {
         INIT, //0, 表示这个请求尚未被处理
@@ -69,7 +69,7 @@ public class ChargeRequest {
     }
     private String succReqs;
 
-    public List<Long> getSuccReqs() {
+    public List<Long> getSuccReqsList() {
         String input = succReqs;
         List<Long> resultList = new ArrayList<>();
 
