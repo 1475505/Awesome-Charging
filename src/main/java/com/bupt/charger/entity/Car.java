@@ -54,4 +54,11 @@ public class Car {
 
     private long PileId;
 
+    public boolean isCharging() {
+        if (status != Status.COMPLETED && status != Status.OTHER) {
+            return true;
+        }
+        return false;
+    }
+
 }

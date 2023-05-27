@@ -3,6 +3,8 @@ package com.bupt.charger.controller;
 import com.bupt.charger.common.ApiResp;
 import com.bupt.charger.exception.ApiException;
 import com.bupt.charger.request.ChargeReqRequest;
+import com.bupt.charger.request.ModifyChargeAmountRequest;
+import com.bupt.charger.request.ModifyChargeModeRequest;
 import com.bupt.charger.response.Resp;
 import com.bupt.charger.service.ChargeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,26 @@ public class UserChargeController {
             Resp resp = chargeService.chargeRequest(chargeReqRequest);
             return ResponseEntity.ok().body(resp);
         } catch (ApiException e) {
+            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
+        }
+    }
+
+    @PostMapping("modifyAmount")
+    public ResponseEntity<Object> modifyAmount(@RequestBody ModifyChargeAmountRequest request) {
+        try {
+            chargeService.ModifyRequestAmount(request);
+            return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
+        } catch (Exception e) {
+            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
+        }
+    }
+
+    @PostMapping("modifyMode")
+    public ResponseEntity<Object> modifyMode(@RequestBody ModifyChargeModeRequest request) {
+        try {
+            chargeService.ModifyRequestMode(request);
+            return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
+        } catch (Exception e) {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
         }
     }

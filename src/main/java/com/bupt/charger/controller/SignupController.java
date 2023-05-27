@@ -30,7 +30,7 @@ public class SignupController {
         try {
             userService.registerUser(registrationRequest);
             return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
-        } catch (ApiException e) {
+        } catch (Exception e) {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
         }
     }

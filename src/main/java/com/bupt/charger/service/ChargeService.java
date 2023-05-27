@@ -7,6 +7,8 @@ import com.bupt.charger.exception.ApiException;
 import com.bupt.charger.repository.CarRepository;
 import com.bupt.charger.repository.ChargeReqRepository;
 import com.bupt.charger.request.ChargeReqRequest;
+import com.bupt.charger.request.ModifyChargeAmountRequest;
+import com.bupt.charger.request.ModifyChargeModeRequest;
 import com.bupt.charger.response.ChargeReqResponse;
 import com.bupt.charger.response.UserLoginResponse;
 import lombok.extern.java.Log;
@@ -36,16 +38,18 @@ public class ChargeService {
             throw new ApiException("车牌不存在");
         } else
             chargeRequest.setCarId(carId);
-        chargeRequest.setRequestAmount(chargeReqRequest.getRequestAmount());
-        if ("quick".equalsIgnoreCase(chargeReqRequest.getRequestMode())) {
-            chargeRequest.setRequestMode(ChargeRequest.RequestMode.FAST);
-        } else {
-            chargeRequest.setRequestMode(ChargeRequest.RequestMode.SLOW);
+
+        Car car = carRepository.findByCarId(carId);
+
+        if (car.isCharging()) {
+            throw new ApiException("车辆已经在充电啦");
         }
+
+        chargeRequest.setRequestAmount(chargeReqRequest.getRequestAmount());
+        chargeRequest.setRequestMode(chargeReqRequest.getRequestMode());
 
         chargeReqRepository.save(chargeRequest);
 
-        Car car = carRepository.findByCarId(carId);
         //TODO
 
         ChargeReqResponse response = new ChargeReqResponse();
@@ -54,5 +58,47 @@ public class ChargeService {
         response.setQueue(car.getQueueNo());
 
         return response;
+    }
+
+    public void ModifyRequestAmount(ModifyChargeAmountRequest request) {
+        var carId = request.getCarId();
+        Car car = carRepository.findByCarId(carId);
+        if (car == null) {
+            throw new ApiException("车牌不存在");
+        }
+
+        if (car.getStatus() == Car.Status.CHARGING) {
+            throw new ApiException("车辆已在充电，不可修改");
+        }
+
+        ChargeRequest chargeRequest = chargeReqRepository.getLatestUnDoneRequests(carId);
+
+        if (chargeRequest == null) {
+            throw new ApiException("没有符合条件的请求，可能是没有未完成的充电请求");
+        }
+
+        chargeRequest.setRequestAmount(request.getRequestAmount());
+        chargeReqRepository.save(chargeRequest);
+    }
+
+    public void ModifyRequestMode(ModifyChargeModeRequest request) {
+        var carId = request.getCarId();
+        Car car = carRepository.findByCarId(carId);
+        if (car == null) {
+            throw new ApiException("车牌不存在");
+        }
+
+        if (car.getStatus() == Car.Status.CHARGING) {
+            throw new ApiException("车辆已在充电，不可修改");
+        }
+
+        ChargeRequest chargeRequest = chargeReqRepository.getLatestUnDoneRequests(carId);
+
+        if (chargeRequest == null) {
+            throw new ApiException("没有符合条件的请求，可能是没有未完成的充电请求");
+        }
+
+        chargeRequest.setRequestMode(request.getRequestMode());
+        chargeReqRepository.save(chargeRequest);
     }
 }

@@ -28,14 +28,13 @@ public class ChargeRequest {
     private String carId;
 
     @Enumerated(EnumType.ORDINAL)
-    private Status carPosition = Status.COMPLETED;
+    private Status carPosition = Status.INIT;
 
     public enum Status {
-        COMPLETED, //0, 表示这个请求已经充完电了，或者还没开始进等候区等情况
-        WAITING,  //1
-        PENDING,  //2
-        CHARGING, //3
-        OTHER  //4
+        INIT, //0, 表示这个请求尚未被处理
+        DOING, //1
+        DONE,  //2
+        OTHER  //3
     }
 
     private double requestAmount;
@@ -55,6 +54,19 @@ public class ChargeRequest {
  后面调度可以建个补偿请求，若id=3，设置充3度电。
  然后id=1的succReqs增加元素3.
  */
+
+    public void setRequestMode(RequestMode mode) {
+        this.requestMode = mode;
+    }
+    public void setRequestMode(String mode) {
+        if ("quick".equalsIgnoreCase(mode)) {
+            this.setRequestMode(RequestMode.FAST);
+        } else if ("slow".equalsIgnoreCase(mode)) {
+            this.setRequestMode(RequestMode.SLOW);
+        } else {
+            this.setRequestMode(RequestMode.UNSET);
+        }
+    }
     private String succReqs;
 
     public List<Long> getSuccReqs() {

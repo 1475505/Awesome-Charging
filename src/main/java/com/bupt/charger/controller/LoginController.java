@@ -29,7 +29,7 @@ public class LoginController {
         try {
             UserLoginResponse loginResponse = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
             return ResponseEntity.ok().body(new ApiResp(0, "请求成功", loginResponse));
-        } catch (LoginException e) {
+        } catch (Exception e) {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
         }
     }

@@ -7,3 +7,12 @@ Content-Type: application/json
   "request_amount": 233.33,
   "request_mode": "slow"
 }
+
+### modify charge amount
+POST http://localhost:6480/user/request
+Content-Type: application/json
+
+{
+  "car_id": "test",
+  "request_amount": 648.88
+}
