@@ -2,7 +2,9 @@ package com.bupt.charger.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,10 +19,16 @@ public class ChargeRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+
     private String carId;
 
     @Enumerated(EnumType.ORDINAL)
-    private Status carPosition; // 1 or 3 or
+    private Status carPosition = Status.COMPLETED;
 
     public enum Status {
         COMPLETED, //0, 表示这个请求已经充完电了，或者还没开始进等候区等情况
@@ -33,10 +41,10 @@ public class ChargeRequest {
     private double requestAmount;
     private double doneAmount;
 
-    private RequestMode requestMode;
+    private RequestMode requestMode = RequestMode.UNSET;
 
     public enum RequestMode {
-        FAST, SLOW
+        UNSET, FAST, SLOW
     }
 
     /*
@@ -70,7 +78,7 @@ public class ChargeRequest {
 
     /* 若添加成功，返回true，否则false  */
     public boolean addSuccReqs(long id) {
-        if (succReqs.isEmpty()) {
+        if (succReqs == null || succReqs.isEmpty()) {
             succReqs = String.valueOf(id);
         } else {
             succReqs += "," + id;

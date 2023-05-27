@@ -29,14 +29,13 @@ public class LogAspect {
 
     private final static Logger LOG = LoggerFactory.getLogger(LogAspect.class);
 
-
     @Resource
     private SnowFlake snowFlake;
 
     /**
      * 定义一个切点
      */
-    @Pointcut("execution(public * com.liul2566.*.controller..*Controller.*(..))")
+    @Pointcut("execution(public * com.bupt.*.controller..*Controller.*(..))")
     public void controllerPointcut() {
     }
 

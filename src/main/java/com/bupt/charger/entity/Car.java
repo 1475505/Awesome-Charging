@@ -2,6 +2,7 @@ package com.bupt.charger.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NonNull;
 
 import java.awt.geom.Area;
 import java.util.Queue;
@@ -20,7 +21,7 @@ public class Car {
     private String carId;
 
     @Enumerated(EnumType.ORDINAL)
-    private Status status;
+    private Status status = Status.COMPLETED;
 
     public enum Status {
         COMPLETED, //0
@@ -31,7 +32,7 @@ public class Car {
     }
 
     @Enumerated(EnumType.ORDINAL)
-    private Area area;
+    private Area area = Area.COMPLETED;
 
     public enum Area {
         COMPLETED, //0,表示没来充电
@@ -40,8 +41,9 @@ public class Car {
         OTHER  //3
     }
 
-    @Enumerated(EnumType.ORDINAL)
-    private Queue queue;
+    private Queue queue = Queue.UNQUEUED;
+
+    private String queueNo;
 
     public enum Queue {
         UNQUEUED, //0,表示没来充电

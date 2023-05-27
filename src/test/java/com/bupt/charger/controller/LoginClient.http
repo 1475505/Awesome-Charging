@@ -1,0 +1,17 @@
+### correct login
+POST http://localhost:6480/login
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "test"
+}
+
+### password error
+POST http://localhost:6480/login
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "wrong"
+}

@@ -4,7 +4,7 @@ import com.bupt.charger.entity.Car;
 import com.bupt.charger.repository.CarRepository;
 import com.bupt.charger.response.UserLoginResponse;
 import com.bupt.charger.entity.User;
-import com.bupt.charger.exception.RegistrationException;
+import com.bupt.charger.exception.ApiException;
 import com.bupt.charger.repository.UserRepository;
 import com.bupt.charger.request.UserRegistrationRequest;
 import lombok.extern.java.Log;
@@ -26,13 +26,13 @@ public class UserService {
     @Autowired
     private CarRepository carRepository;
 
-    public void registerUser(UserRegistrationRequest registrationRequest) throws RegistrationException {
+    public void registerUser(UserRegistrationRequest registrationRequest) throws ApiException {
         log.info("User: register request" + registrationRequest);
         if (userRepository.existsByUsername(registrationRequest.getUsername())) {
-            throw new RegistrationException("用户名已存在");
+            throw new ApiException("用户名已存在");
         }
         if (carRepository.existsByCarId(registrationRequest.getCarId())) {
-            throw new RegistrationException("车已被其他用户绑定");
+            throw new ApiException("车已被其他用户绑定");
         }
 
         User user = new User();

@@ -1,3 +1,15 @@
+### signup
+POST http://localhost:6480/signup
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "test",
+  "car_id": "test"
+}
+
+
+### signup existed carId
 POST http://localhost:6480/signup
 Content-Type: application/json
 
@@ -6,3 +18,4 @@ Content-Type: application/json
   "password": "lxw",
   "car_id": "test"
 }
+
