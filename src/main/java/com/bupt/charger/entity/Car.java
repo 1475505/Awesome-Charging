@@ -25,20 +25,32 @@ public class Car {
 
     public enum Status {
         COMPLETED, //0
-        WAITING,  //1
-        PENDING,  //2
-        CHARGING, //3
+        waiting,  //1
+        pending,  //2
+        charging, //3
         OTHER  //4
     }
 
     @Enumerated(EnumType.ORDINAL)
     private Area area = Area.COMPLETED;
 
+
     public enum Area {
         COMPLETED, //0,表示没来充电
         WAITING,  //1
         CHARGING, //2
-        OTHER  //3
+        OTHER;  //3
+
+        @Override
+        public String toString() {
+            if (this == WAITING) {
+                return "waiting area";
+            }
+            if (this == CHARGING) {
+                return "charging area";
+            }
+            return super.toString();
+        }
     }
 
     private Queue queue = Queue.UNQUEUED;

@@ -28,7 +28,7 @@ public class UserChargeController {
     public ResponseEntity<Object> reqCharge(@RequestBody ChargeReqRequest chargeReqRequest) {
         try {
             Resp resp = chargeService.chargeRequest(chargeReqRequest);
-            return ResponseEntity.ok().body(resp);
+            return ResponseEntity.ok().body(new ApiResp(resp));
         } catch (ApiException e) {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
         }

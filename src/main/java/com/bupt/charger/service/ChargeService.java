@@ -67,7 +67,7 @@ public class ChargeService {
             throw new ApiException("车牌不存在");
         }
 
-        if (car.getStatus() == Car.Status.CHARGING) {
+        if (car.getStatus() == Car.Status.charging) {
             throw new ApiException("车辆已在充电，不可修改");
         }
 
@@ -89,7 +89,7 @@ public class ChargeService {
             throw new ApiException("车牌不存在");
         }
 
-        if (car.getStatus() == Car.Status.CHARGING) {
+        if (car.getStatus() == Car.Status.charging) {
             throw new ApiException("车辆已在充电，不可修改");
         }
 

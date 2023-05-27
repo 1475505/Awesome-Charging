@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "queues")
-public class Queue {
+public class ChargingQueue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -74,6 +74,17 @@ public class Queue {
             }
             return consumeCar;
         }
+    }
+
+    // return -1 means NOTFOUND
+    public int getQueueIdx(String carId) {
+        List<String> queueCars = getWaitingCarsList();
+        for (int i = 0; i < queueCars.size(); i++) {
+            if (queueCars.get(i).equals(carId)) {
+                return i + 1;
+            }
+        }
+        return -1;
     }
 
 }
