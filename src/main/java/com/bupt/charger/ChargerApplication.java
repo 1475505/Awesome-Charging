@@ -15,7 +15,7 @@ public class ChargerApplication {
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication(ChargerApplication.class);
 		Environment env = app.run(args).getEnvironment();
-		LOG.info("启动成功： http://localhost:{}", env.getProperty("server.port") + "/swagger-ui/index.html");
+		LOG.info("启动成功： http://localhost:{}", env.getProperty("server.port") + "/v3/api-docs");
 	}
 
 }
