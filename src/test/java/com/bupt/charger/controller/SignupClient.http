@@ -1,0 +1,8 @@
+POST http://localhost:6480/signup
+Content-Type: application/json
+
+{
+  "username": "wxl",
+  "password": "lxw",
+  "car_id": "test"
+}

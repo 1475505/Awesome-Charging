@@ -1,5 +1,7 @@
 package com.bupt.charger.service;
 
+import com.bupt.charger.entity.Car;
+import com.bupt.charger.repository.CarRepository;
 import com.bupt.charger.response.UserLoginResponse;
 import com.bupt.charger.entity.User;
 import com.bupt.charger.exception.RegistrationException;
@@ -21,10 +23,16 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private CarRepository carRepository;
+
     public void registerUser(UserRegistrationRequest registrationRequest) throws RegistrationException {
         log.info("User: register request" + registrationRequest);
         if (userRepository.existsByUsername(registrationRequest.getUsername())) {
             throw new RegistrationException("用户名已存在");
+        }
+        if (carRepository.existsByCarId(registrationRequest.getCarId())) {
+            throw new RegistrationException("车已被其他用户绑定");
         }
 
         User user = new User();
@@ -32,7 +40,11 @@ public class UserService {
         user.setPassword(registrationRequest.getPassword());
         user.setCarId(registrationRequest.getCarId());
 
+        Car car = new Car();
+        car.setCarId(registrationRequest.getCarId());
+
         userRepository.save(user);
+        carRepository.save(car);
     }
 
     public UserLoginResponse login(String username, String password) throws LoginException {
