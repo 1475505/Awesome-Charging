@@ -28,4 +28,15 @@ public class UserCarController {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
         }
     }
+
+    @GetMapping("/checkStatus")
+    public ResponseEntity<?> checkStatus(@RequestParam("car_id") String carId) {
+        try {
+            var resp = carService.getCarCharging(carId);
+            return ResponseEntity.ok().body(new ApiResp(resp));
+        } catch (Exception e) {
+            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
+        }
+    }
+
 }

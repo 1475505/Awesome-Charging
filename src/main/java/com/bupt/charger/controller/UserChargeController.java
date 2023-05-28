@@ -9,10 +9,7 @@ import com.bupt.charger.response.Resp;
 import com.bupt.charger.service.ChargeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author ll （ created: 2023-05-27 18:02 )
@@ -53,5 +50,25 @@ public class UserChargeController {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
         }
     }
+
+    @PostMapping("/startCharging")
+    public ResponseEntity<Object> startCharging(@RequestParam("car_id") String carId) {
+        try {chargeService.startCharging(carId);
+            return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
+        } catch (ApiException e) {
+            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/stopCharging")
+    public ResponseEntity<Object> stopCharging(@RequestParam("car_id") String carId) {
+        try {
+            chargeService.stopCharging(carId);
+            return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
+        } catch (ApiException e) {
+            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
+        }
+    }
+
 
 }

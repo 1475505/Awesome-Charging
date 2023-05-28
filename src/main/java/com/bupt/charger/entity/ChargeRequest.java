@@ -97,4 +97,7 @@ public class ChargeRequest {
         }
         return true;
     }
+
+    private LocalDateTime startChargingTime;
+    private LocalDateTime endChargingTime;
 }

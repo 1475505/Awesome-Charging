@@ -2,10 +2,6 @@ package com.bupt.charger.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NonNull;
-
-import java.awt.geom.Area;
-import java.util.Queue;
 
 /**
  * @author ll （ created: 2023-05-27 17:26 )
@@ -64,9 +60,10 @@ public class Car {
         OTHER  //3
     }
 
-    private long PileId;
+    private long handingReqId = -1;
+    private long pileId;
 
-    public boolean isCharging() {
+    public boolean inChargingProcess() {
         if (status != Status.COMPLETED && status != Status.OTHER) {
             return true;
         }
