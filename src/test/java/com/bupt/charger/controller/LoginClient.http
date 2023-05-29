@@ -16,3 +16,10 @@ Content-Type: application/json
   "password": "wrong"
 }
 
+### logout
+POST http://localhost:6480/logout
+Content-Type: application/json
+
+{
+  "username": "test"
+}
