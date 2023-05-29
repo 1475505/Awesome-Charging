@@ -1,0 +1,7 @@
+### correct admin login
+POST http://localhost:6480/admin/startCharger
+Content-Type: application/json
+
+{
+  "pileId": "test"
+}

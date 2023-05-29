@@ -21,8 +21,8 @@ public class Pile {
 
     public enum Status {
         ERROR(-1), //故障
-        UNRUNNING(0),  //启动未运行
-        ON(1),  //运行未充电
+        OFF(0),  //关闭
+        UNRUNNING(1),  //启动未运行
         CHARGING(2); //充电中
 
         private int value;
