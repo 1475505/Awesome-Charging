@@ -16,22 +16,22 @@ import org.springframework.web.bind.annotation.*;
 import javax.security.auth.login.LoginException;
 
 /**
- * @author ll （ created: 2023-05-26 19:41 )
+ * @author wxl,wyf （ created: 2023-05-29 15:31 )
  */
 @RestController
 @Tag(name = "登录")
-@RequestMapping("/user/login")
-public class LoginController {
+@RequestMapping("/admin/login")
+public class AdminLoginController {
 
     @Autowired
-    private UserService userService;
+    private AdminService adminService;
 
     @PostMapping
-    @Operation(summary = "用户登录")
-    public ResponseEntity<Object> userLogin(@RequestBody LoginRequest loginRequest) {
+    @Operation(summary = "管理员登录")
+    public ResponseEntity<Object> adminLogin(@RequestBody AdminLoginRequest adminLoginRequest) {
         try {
-            UserLoginResponse loginResponse = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
-            return ResponseEntity.ok().body(new ApiResp(0, "请求成功", loginResponse));
+            AdminLoginResponse adminLoginResponse = adminService.login(adminLoginRequest.getAdminName(), adminLoginRequest.getPassword());
+            return ResponseEntity.ok().body(new ApiResp(0, "请求成功", adminLoginResponse));
         } catch (Exception e) {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
         }
