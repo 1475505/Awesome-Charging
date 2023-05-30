@@ -14,13 +14,18 @@ import java.util.List;
 @Entity
 @Table(name = "queues")
 public class ChargingQueue {
+    // 这个是模拟队列，
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 直接映射为具体的表名字，不加映射关系就是和数据库中列名一样
     private String queueId;
 
     private String waitingCars;
+
+    // TODO: 为充电桩队列的最大长度读取配置文件时设置这个值
+    private int capacity;
 
     public List<String> getWaitingCarsList() {
         String input = waitingCars;
@@ -31,6 +36,14 @@ public class ChargingQueue {
             return Arrays.asList(numberStrings);
         }
         return resultList;
+    }
+
+    public String getTopCarId() {
+        List<String> waitingCarsList = getWaitingCarsList();
+        if (waitingCarsList.isEmpty()) {
+            return null;
+        }
+        return waitingCarsList.get(0);
     }
 
     public int getWaitingCarCnt() {
@@ -46,8 +59,8 @@ public class ChargingQueue {
 
     /* 若添加成功，返回true，否则false  */
     public boolean addWaitingCar(String id) {
-        final int WAITING_CAPACITY = 6;
-        if (getWaitingCarCnt() > WAITING_CAPACITY) {
+        // TODO: 容量应该是读取配置文件的,和capacity进行比较
+        if (getWaitingCarCnt() > capacity) {
             return false;
         }
         if (waitingCars == null || waitingCars.isEmpty()) {
@@ -58,11 +71,12 @@ public class ChargingQueue {
         return false;
     }
 
-    public String consumeWaitingCar(String id) {
+    // 这个是出队列
+    public String consumeWaitingCar() {
         if (waitingCars == null || waitingCars.isEmpty()) {
             return null;
         }
-        var consumeCar = getWaitingCarsList().get(0);
+        var consumeCar = getTopCarId();
         if (getWaitingCarCnt() == 1) {
             waitingCars = "";
             return consumeCar;
@@ -74,6 +88,19 @@ public class ChargingQueue {
             }
             return consumeCar;
         }
+    }
+
+    public boolean removeWaitingCar(String carId) {
+        List<String> waitingCarsList = getWaitingCarsList();
+        if (waitingCarsList.isEmpty()) {
+            return false;
+        }
+        if (waitingCarsList.contains(carId)) {
+            waitingCarsList.remove(carId);
+            waitingCars = String.join(",", waitingCarsList);
+            return true;
+        }
+        return false;
     }
 
     // return -1 means NOTFOUND

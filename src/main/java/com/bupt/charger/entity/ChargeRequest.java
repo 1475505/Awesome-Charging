@@ -31,10 +31,10 @@ public class ChargeRequest {
     private Status status = Status.INIT;
 
     public enum Status {
-        INIT, //0, 表示这个请求尚未被处理
-        DOING, //1
-        DONE,  //2
-        OTHER  //3
+        INIT, // 0, 表示这个请求尚未被处理
+        DOING, // 1
+        DONE,  // 2
+        OTHER  // 3
     }
 
     private double requestAmount;
