@@ -3,6 +3,7 @@ package com.bupt.charger.controller;
 
 import com.bupt.charger.common.ApiResp;
 import com.bupt.charger.request.LogoutRequest;
+import com.bupt.charger.request.ShutDownPileRequest;
 import com.bupt.charger.request.StartPileRequest;
 import com.bupt.charger.response.AdminLoginResponse;
 import com.bupt.charger.response.AdminPileResponse;
@@ -21,17 +22,28 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/admin/startCharger")
+@RequestMapping("/admin")
 public class AdminPileController {
 
     @Autowired
     private AdminService adminService;
 
-    @PostMapping
+    @PostMapping("/startCharger")
     @Operation(summary = "管理员启动充电桩")
     public ResponseEntity<Object> startPile(@RequestBody StartPileRequest request)  {
         try {
             adminService.startPile(request);
+            return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
+        } catch (Exception e) {
+            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/offCharger")
+    @Operation(summary = "管理员关闭充电桩")
+    public ResponseEntity<Object> shutDownPile(@RequestBody ShutDownPileRequest request)  {
+        try {
+            adminService.shutDownPile(request);
             return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
         } catch (Exception e) {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));

@@ -3,6 +3,7 @@ import com.bupt.charger.controller.AdminPileController;
 import com.bupt.charger.entity.Admin;
 import com.bupt.charger.entity.Pile;
 import com.bupt.charger.repository.PilesRepository;
+import com.bupt.charger.request.ShutDownPileRequest;
 import com.bupt.charger.request.StartPileRequest;
 import com.bupt.charger.response.AdminLoginResponse;
 import com.bupt.charger.response.AdminPileResponse;
@@ -57,6 +58,26 @@ public class AdminService {
             throw new ApiException("充电桩状态异常！");
         }
         pile.setStatus(Pile.Status.UNRUNNING);
+
+        pilesRepository.save(pile);
+
+    }
+
+    public void shutDownPile(ShutDownPileRequest shutDownPileRequest) throws ApiException
+    {
+        log.info("Admin try to shut down pile: " + shutDownPileRequest.getPileId());
+        var pileId = shutDownPileRequest.getPileId();
+        Pile pile = pilesRepository.findByPileId(pileId);
+        if(pile == null)
+        {
+            throw new ApiException("不存在这个充电桩！");
+        }
+
+        if(pile.getStatus() != Pile.Status.UNRUNNING)
+        {
+            throw new ApiException("充电桩状态异常！");
+        }
+        pile.setStatus(Pile.Status.OFF);
 
         pilesRepository.save(pile);
 

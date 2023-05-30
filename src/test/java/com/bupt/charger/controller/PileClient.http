@@ -1,7 +1,17 @@
-### correct admin login
+### correct start pile
 POST http://localhost:6480/admin/startCharger
 Content-Type: application/json
 
 {
   "pileId": "test"
 }
+
+### correct shut down pile
+POST http://localhost:6480/admin/offCharger
+Content-Type: application/json
+
+{
+  "pileId": "test"
+}
+
+

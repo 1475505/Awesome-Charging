@@ -36,8 +36,5 @@ public class Admin {
         this.adminName=adminName;
     }
 
-//    public static String getAdminName(){
-//        String str=this.adminName;
-//        return adminName;
-//    }
+
 }
