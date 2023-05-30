@@ -1,0 +1,13 @@
+### modify price and other attribute
+POST http://localhost:6480/admin/setParameters
+Content-Type: application/json
+
+{
+  "pileId": "test",
+  "rule": "test",
+  "peak_up": "6.45",
+  "usual_up": "1.23",
+  "valley_up": "0.67",
+  "serve_up": "1.98"
+}
+

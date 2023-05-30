@@ -5,6 +5,7 @@ import com.bupt.charger.entity.Pile;
 import com.bupt.charger.repository.PilesRepository;
 import com.bupt.charger.request.ShutDownPileRequest;
 import com.bupt.charger.request.StartPileRequest;
+import com.bupt.charger.request.SetPileParametersRequest;
 import com.bupt.charger.response.AdminLoginResponse;
 import com.bupt.charger.response.AdminPileResponse;
 import com.bupt.charger.response.UserLoginResponse;
@@ -78,6 +79,41 @@ public class AdminService {
             throw new ApiException("充电桩状态异常！");
         }
         pile.setStatus(Pile.Status.OFF);
+
+        pilesRepository.save(pile);
+
+    }
+
+
+
+    public void setPileParameters(SetPileParametersRequest setPileParametersRequest) throws ApiException
+    {
+        log.info("Admin try to set pile parameters: " + setPileParametersRequest.getPileId());
+        var pileId = setPileParametersRequest.getPileId();
+        Pile pile = pilesRepository.findByPileId(pileId);
+        if(pile == null)
+        {
+            throw new ApiException("不存在这个充电桩！");
+        }
+        if(pile.getStatus() != Pile.Status.OFF)
+        {
+            throw new ApiException("充电桩状态异常！");
+        }
+
+        var feePattern = setPileParametersRequest.getRule();
+        pile.setFeePattern(feePattern);
+
+        double peakPrice = setPileParametersRequest.getPeakUp();
+        pile.setPeakPrice(peakPrice);
+
+        double usualPrice = setPileParametersRequest.getUsualUp();
+        pile.setUsualPrice(usualPrice);
+
+        double valleyPrice = setPileParametersRequest.getValleyUp();
+        pile.setValleyPrice(valleyPrice);
+
+        double servePrice = setPileParametersRequest.getServeUp();
+        pile.setServePrice(servePrice);
 
         pilesRepository.save(pile);
 

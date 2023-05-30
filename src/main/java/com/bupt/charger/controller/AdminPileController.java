@@ -2,11 +2,9 @@ package com.bupt.charger.controller;
 
 
 import com.bupt.charger.common.ApiResp;
-import com.bupt.charger.request.LogoutRequest;
+import com.bupt.charger.request.SetPileParametersRequest;
 import com.bupt.charger.request.ShutDownPileRequest;
 import com.bupt.charger.request.StartPileRequest;
-import com.bupt.charger.response.AdminLoginResponse;
-import com.bupt.charger.response.AdminPileResponse;
 import com.bupt.charger.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +42,17 @@ public class AdminPileController {
     public ResponseEntity<Object> shutDownPile(@RequestBody ShutDownPileRequest request)  {
         try {
             adminService.shutDownPile(request);
+            return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
+        } catch (Exception e) {
+            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/setParameters")
+    @Operation(summary = "管理员修改充电桩状态")
+    public ResponseEntity<Object> setPileParameters(@RequestBody SetPileParametersRequest request)  {
+        try {
+            adminService.setPileParameters(request);
             return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
         } catch (Exception e) {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
