@@ -1,13 +1,11 @@
 package com.bupt.charger.service;
 
 import com.bupt.charger.controller.AdminPileController;
-import com.bupt.charger.entity.Admin;
-import com.bupt.charger.entity.Bill;
-import com.bupt.charger.entity.Pile;
+import com.bupt.charger.entity.*;
+import com.bupt.charger.repository.CarRepository;
 import com.bupt.charger.repository.PilesRepository;
 import com.bupt.charger.request.*;
 import com.bupt.charger.response.*;
-import com.bupt.charger.entity.User;
 import com.bupt.charger.exception.ApiException;
 import com.bupt.charger.repository.AdminRepository;
 import io.swagger.annotations.Api;
@@ -18,6 +16,8 @@ import org.springframework.stereotype.Service;
 import javax.security.auth.login.LoginException;
 import java.time.Duration;
 import java.time.ZoneOffset;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author wyf （ created: 2023-05-26 13:27 )
@@ -109,12 +109,10 @@ public class AdminService {
     }
 
 
-    public CheckChargerResponse checkCharger(CheckChargerRequest checkChargerRequest) {
-        log.info("Admin try to check charger : " + checkChargerRequest.getPileId());
+    public CheckChargerResponse checkCharger(String pileId) {
+        log.info("Admin try to check charger : " + pileId);
         CheckChargerResponse response = new CheckChargerResponse();
-        var pileId = checkChargerRequest.getPileId();
         Pile pile = pilesRepository.findByPileId(pileId);
-
         if (pile == null) {
             throw new ApiException("未找到此充电桩");
         }
@@ -122,6 +120,26 @@ public class AdminService {
         response.setTotalChargeNum(pile.getTotalChargeNum());
         response.setTotalChargeTime(pile.getTotalChargeTime());
         response.setTotalCapacity(pile.getTotalCapacity());
+
+        return response;
+    }
+
+
+    @Autowired
+    private CarRepository carRepository;
+    public CheckChargerQueueResponse checkChargerQueue(String pileId) {
+        log.info("Admin try to check charger queue: " + pileId);
+
+        CheckChargerQueueResponse response = new CheckChargerQueueResponse();
+        Pile pile = pilesRepository.findByPileId(pileId);
+
+        if (pile == null) {
+            throw new ApiException("未找到此充电桩");
+        }
+
+        List<Car> cars=carRepository.findAllByPileId(pileId);
+
+        response.setCars(cars);
 
         return response;
     }

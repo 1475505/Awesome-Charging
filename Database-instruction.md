@@ -1,3 +1,4 @@
+
 # Database instruction
 
 ## 在这里对db里的数据进行说明
@@ -45,17 +46,29 @@
 
 ### piles（充电桩实体）
 
-| 数据              | 格式    | 内容                       | 说明                                                      |
-| ----------------- | ------- |--------------------------| --------------------------------------------------------- |
-| id                | BIGINT  | 整数                       | piles的id(主键)                                           |
-| cars              | VARCHAR | 字符串                      | 充电桩对应的等待队列                                      |
-| fee_pattern       | VARCHAR | 字符串                      | 计费模式                                                  |
-| peak_price        | DOUBLE  | 浮点数                      | 峰值价格                                                  |
-| pile_id           | VARCHAR | 字符串                      | 反正就是充电桩的名字，比如“龙神纳西妲六号桩”                                       |
-| serve_price       | DOUBLE  | 浮点数                      | 服务价格                                                  |
-| status            | ENUM    | 枚举（ERROR,OFF,UNRUNNING,CHARGING） | 四个状态                                                  |
-| total_capacity    | INT     | 整数                       | 等待队列的长度                                            |
-| total_charge_num  | INT     | 整数                       | 完成过多少次充电请求 |
-| total_charge_time | INT     | 整数                       | 总共充电时间                                              |
-| usual_price       | DOUBLE  | 浮点数                      | 常时电价                                                  |
-| valley_price      | DOUBLE  | 浮点数                      | 谷时电价                                                  |
+| 数据                | 格式      | 内容                               | 说明                      |
+|-------------------|---------|----------------------------------|-------------------------|
+| id                | BIGINT  | 整数                               | piles的id(主键)            |
+| cars              | VARCHAR | 字符串                              | 充电桩对应的等待队列              |
+| fee_pattern       | VARCHAR | 字符串                              | 计费模式                    |
+| peak_price        | DOUBLE  | 浮点数                              | 峰值价格                    |
+| pile_id           | VARCHAR | 字符串                              | 反正就是充电桩的名字，比如“龙神纳西妲六号桩” |
+| serve_price       | DOUBLE  | 浮点数                              | 服务价格                    |
+| status            | ENUM    | 枚举（ERROR,OFF,UNRUNNING,CHARGING） | 四个状态                    |
+| total_capacity    | INT     | 整数                               | 等待队列的长度                 |
+| total_charge_num  | INT     | 整数                               | 完成过多少次充电请求              |
+| total_charge_time | INT     | 整数                               | 总共充电时间                  |
+| usual_price       | DOUBLE  | 浮点数                              | 常时电价                    |
+| valley_price      | DOUBLE  | 浮点数                              | 谷时电价                    |
+
+### cars
+| 数据             | 格式      | 内容  | 说明            |
+|----------------|---------|-----|---------------|
+| id             | BIGINT  | 整数  | cars的id(主键)   |
+| area           | TINYINT | 整数  | 车所在区域         |      
+| car_id         | VARCHAR | 字符串 | 车辆的名称(用于代码实现) |
+| handing_req_id | BIGINT  | 整数  | 请求相关          |
+| pile_id        | VARCHAR | 字符串 | pileId相关      |      
+| queue          | TINYINT | 整数  | 队列号           |
+| queue_no       | VARCHAR | 字符串 | 车在哪个队列哪个      |
+| status         | TINYINT | 整数  | 车状态           |

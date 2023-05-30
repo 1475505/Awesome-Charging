@@ -2,18 +2,12 @@ package com.bupt.charger.controller;
 
 
 import com.bupt.charger.common.ApiResp;
-import com.bupt.charger.request.CheckChargerRequest;
-import com.bupt.charger.request.SetPileParametersRequest;
-import com.bupt.charger.request.ShutDownPileRequest;
-import com.bupt.charger.request.StartPileRequest;
+import com.bupt.charger.request.*;
 import com.bupt.charger.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author wxl, wyf （ created: 2023-05-29 19 :42 )
@@ -60,11 +54,22 @@ public class AdminPileController {
         }
     }
 
-    @PostMapping("/checkCharger")
+    @GetMapping("/checkCharger")
     @Operation(summary = "管理员查看充电桩状态")
-    public ResponseEntity<?> checkCharger(@RequestBody CheckChargerRequest request) {
+    public ResponseEntity<?> checkCharger(@RequestParam("pileId") String pileId) {
         try {
-            var response = adminService.checkCharger(request);
+            var response = adminService.checkCharger(pileId);
+            return ResponseEntity.ok().body(new ApiResp(response));
+        } catch (Exception e) {
+            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
+        }
+    }
+
+    @GetMapping("/checkChargerQueue")
+    @Operation(summary = "管理员查看指定充电桩队列状态")
+    public ResponseEntity<?> checkChargerQueue(@RequestParam("pileId") String pileId) {
+        try {
+            var response = adminService.checkChargerQueue(pileId);
             return ResponseEntity.ok().body(new ApiResp(response));
         } catch (Exception e) {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
