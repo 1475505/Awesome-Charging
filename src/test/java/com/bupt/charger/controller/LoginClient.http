@@ -1,5 +1,5 @@
 ### correct login
-POST http://localhost:6480/login
+POST http://localhost:6480/user/login
 Content-Type: application/json
 
 {
@@ -8,7 +8,7 @@ Content-Type: application/json
 }
 
 ### password error
-POST http://localhost:6480/login
+POST http://localhost:6480/user/login
 Content-Type: application/json
 
 {
@@ -17,7 +17,7 @@ Content-Type: application/json
 }
 
 ### logout
-POST http://localhost:6480/logout
+POST http://localhost:6480/user/logout
 Content-Type: application/json
 
 {

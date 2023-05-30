@@ -61,7 +61,7 @@ public class Car {
     }
 
     private long handingReqId = -1;
-    private long pileId;
+    private String pileId;
 
     public boolean inChargingProcess() {
         if (status != Status.COMPLETED && status != Status.OTHER) {

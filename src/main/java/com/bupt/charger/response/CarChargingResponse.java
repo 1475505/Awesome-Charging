@@ -15,7 +15,7 @@ public class CarChargingResponse {
     private long createTime;
 
     @JsonProperty("pile_id")
-    private long pileId;
+    private String pileId;
 
     @JsonProperty("amount")
     private double amount;

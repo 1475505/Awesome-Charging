@@ -12,14 +12,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author ll （ created: 2023-05-26 19:41 )
+ * @author wxl,wyf （ created: 2023-05-29 15:49 )
  */
 @RestController
-@RequestMapping("/user/logout")
-public class LogoutController {
+@RequestMapping("/admin/logout")
+public class AdminLogoutController {
 
     @PostMapping
-    public ResponseEntity<Object> logout(@RequestBody LogoutRequest request) {
+    public ResponseEntity<Object> logout(@RequestBody LogoutRequest request)  {
         try {
             return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
         } catch (Exception e) {

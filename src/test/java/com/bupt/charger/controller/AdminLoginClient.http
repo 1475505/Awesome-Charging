@@ -1,0 +1,17 @@
+### correct admin login
+POST http://localhost:6480/admin/login
+Content-Type: application/json
+
+{
+  "adminName": "admin",
+  "password": "test"
+}
+
+#### admin password error
+#POST http://localhost:6480/admin/login
+#Content-Type: application/json
+#
+#{
+#  "username": "test1",
+#  "password": "wrong"
+#}
