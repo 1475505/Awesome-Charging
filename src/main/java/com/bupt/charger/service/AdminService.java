@@ -40,6 +40,7 @@ public class AdminService {
         return loginResponse;
     }
 
+    @Autowired
     private PilesRepository pilesRepository;
 
     public void startPile(StartPileRequest startPileRequest) throws ApiException
