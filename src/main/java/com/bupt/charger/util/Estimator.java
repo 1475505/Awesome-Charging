@@ -101,4 +101,5 @@ public class Estimator {
     public Duration estimateEnChargingQueueWaitingTime() {
         return Duration.ofSeconds(0);
     }
+
 }

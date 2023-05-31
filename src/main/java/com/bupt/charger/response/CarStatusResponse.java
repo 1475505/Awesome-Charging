@@ -18,5 +18,5 @@ public class CarStatusResponse extends Resp {
     private String queueNum;
 
     @JsonProperty("request_time")
-    private int requestTime = -1;
+    private long requestTime = -1;
 }

@@ -10,6 +10,7 @@ import com.bupt.charger.repository.ChargingQueueRepository;
 import com.bupt.charger.response.CarChargingResponse;
 import com.bupt.charger.response.CarStatusResponse;
 import com.bupt.charger.response.Resp;
+import com.bupt.charger.util.Estimator;
 import com.bupt.charger.util.FormatUtils;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,13 @@ public class CarService {
         }
         resp.setCarState(car.getStatus().toString());
 
-        //TODO: resp.setRequestTime();
+        Estimator estimator = new Estimator();
+        if (car.getStatus() == Car.Status.charging) {
+            resp.setRequestTime(estimator.estimateCarLeftChargeTime(carId).getSeconds());
+        } else {
+            resp.setRequestTime(estimator.estimateQueueWaitingTime(carId).getSeconds());
+        }
+
 
         return resp;
 
@@ -70,6 +77,8 @@ public class CarService {
         resp.setOrderId(reqId);
         resp.setCreateTime(FormatUtils.LocalDateTime2Long(request.getCreatedAt()));
         resp.setPileId(car.getPileId());
+
+
         //TODO: 更新实时充电量和时间
         resp.setAmount(request.getDoneAmount());
         resp.setChargingStartTime(FormatUtils.LocalDateTime2Long(request.getStartChargingTime()));
@@ -78,6 +87,7 @@ public class CarService {
         resp.setChargingLastTime(resp.getChargingEndTime() - resp.getChargingStartTime());
 
         //TODO: 算钱
+
 
         return resp;
     }

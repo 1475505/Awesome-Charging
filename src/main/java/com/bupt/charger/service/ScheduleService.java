@@ -3,9 +3,11 @@ package com.bupt.charger.service;
 import com.bupt.charger.entity.Car;
 import com.bupt.charger.entity.ChargeRequest;
 import com.bupt.charger.entity.ChargingQueue;
+import com.bupt.charger.entity.Pile;
 import com.bupt.charger.repository.CarRepository;
 import com.bupt.charger.repository.ChargeReqRepository;
 import com.bupt.charger.repository.ChargingQueueRepository;
+import com.bupt.charger.repository.PilesRepository;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,9 @@ public class ScheduleService {
 
     @Autowired
     private ChargeReqRepository chargeReqRepository;
+
+    @Autowired
+    private PilesRepository pilesRepository;
 
     static int fSumNumber = 0;
     static int tSumNumber = 0;
@@ -196,7 +201,7 @@ public class ScheduleService {
             chargingQueueRepository.save(chargingQueue);
             return chargingQueue.getQueueId();
         }
-        // TODO: 这里需要思考一个问题,正在充电的车辆怎么处理,是在队列第一个吗?还是单独列出来.下面代码需要更改为加上正在充电的车辆剩余电量
+        // 这里正在充电的车辆直接是在队列第一个。
         ArrayList<Double> amountList = new ArrayList<>();
         for (ChargingQueue chargingQueue : queueHaveEmpty) {
             //    获取队列中所有车辆
@@ -226,6 +231,18 @@ public class ScheduleService {
         ChargingQueue chargingQueue = queueHaveEmpty.get(minIndex);
         //    将车辆加入到该充电桩的队列中
         chargingQueue.addWaitingCar(carId);
+
+        // 刘亮乱改的，不知道对不对：
+        Car car = carRepository.findByCarId(carId);
+        car.setArea(Car.Area.CHARGING);
+        car.setQueue(Car.Queue.CHARGING);
+        car.setStatus(Car.Status.charging);
+        String pileId = chargingQueue.getQueueId().substring(2); //是这么获取吗？
+        car.setPileId(pileId);
+        Pile pile = pilesRepository.findByPileId(pileId);
+        pile.addCar(carId);
+        pilesRepository.save(pile);
+
         //    保存到数据库
         chargingQueueRepository.save(chargingQueue);
         //    返回充电桩的队列号
