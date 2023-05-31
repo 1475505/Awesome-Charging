@@ -6,6 +6,7 @@ import com.bupt.charger.entity.Pile;
 import com.bupt.charger.repository.PilesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

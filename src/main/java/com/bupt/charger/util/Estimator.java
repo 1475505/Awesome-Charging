@@ -9,6 +9,7 @@ import com.bupt.charger.repository.ChargeReqRepository;
 import com.bupt.charger.repository.ChargingQueueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
@@ -97,7 +98,7 @@ public class Estimator {
         return result;
     }
 
-    //TODO
+    //TODO：
     public Duration estimateEnChargingQueueWaitingTime() {
         return Duration.ofSeconds(0);
     }

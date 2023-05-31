@@ -1,1 +1,1 @@
-GET localhost:6480/user/checkWaitQueue?car_id=test
+GET localhost:6480/user/checkWaitQueue?car_id=nahida

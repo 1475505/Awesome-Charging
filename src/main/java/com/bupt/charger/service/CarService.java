@@ -10,11 +10,18 @@ import com.bupt.charger.repository.ChargingQueueRepository;
 import com.bupt.charger.response.CarChargingResponse;
 import com.bupt.charger.response.CarStatusResponse;
 import com.bupt.charger.response.Resp;
+import com.bupt.charger.util.Calculator;
 import com.bupt.charger.util.Estimator;
 import com.bupt.charger.util.FormatUtils;
 import lombok.extern.java.Log;
+import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+import static java.lang.Math.min;
 
 /**
  * @author ll （ created: 2023-05-27 20:44 )
@@ -24,14 +31,37 @@ import org.springframework.stereotype.Service;
 public class CarService {
 
     @Autowired
-    CarRepository carRepository;
+    private CarRepository carRepository;
 
     @Autowired
-    ChargingQueueRepository chargingQueueRepository;
+    private ChargingQueueRepository chargingQueueRepository;
 
     @Autowired
-    ChargeReqRepository chargeReqRepository;
+    private ChargeReqRepository chargeReqRepository;
 
+    // -1 means error
+    public double updateDoneAmount(String carId) {
+        Car car = carRepository.findByCarId(carId);
+        var reqId = car.getHandingReqId();
+        var requestOptional = chargeReqRepository.findById(reqId);
+        if (requestOptional.isEmpty()) {
+            return -1;
+        }
+        ChargeRequest request = requestOptional.get();
+
+        Calculator calculator = new Calculator();
+        LocalDateTime now = FormatUtils.getNowLocalDateTime();
+        double amount = calculator.getChargeAmount(request.getStartChargingTime(), now, request.getRequestMode());
+        amount = min(amount, request.getRequestAmount());
+        request.setDoneAmount(amount);
+        chargeReqRepository.save(request);
+
+        //TODO: 如果发现大于等于requestAmount，通知前端
+
+        return amount;
+    }
+
+    //6.获取车队列的状态。
     public CarStatusResponse getCarStatus(String carId) {
         Car car = carRepository.findByCarId(carId);
         if (car == null) {
@@ -48,17 +78,18 @@ public class CarService {
         resp.setCarState(car.getStatus().toString());
 
         Estimator estimator = new Estimator();
+        updateDoneAmount(carId);
         if (car.getStatus() == Car.Status.charging) {
             resp.setRequestTime(estimator.estimateCarLeftChargeTime(carId).getSeconds());
         } else {
             resp.setRequestTime(estimator.estimateQueueWaitingTime(carId).getSeconds());
         }
 
-
         return resp;
 
     }
 
+    //8. checkStatus，获取充电中的车的状态。
     public CarChargingResponse getCarCharging(String carId) {
         Car car = carRepository.findByCarId(carId);
         if (car == null) {
@@ -78,19 +109,20 @@ public class CarService {
         resp.setCreateTime(FormatUtils.LocalDateTime2Long(request.getCreatedAt()));
         resp.setPileId(car.getPileId());
 
+        double amount = updateDoneAmount(carId);
+        if (amount < 0) {
+            throw new ApiException("充电请求异常，请联系客服");
+        }
 
-        //TODO: 更新实时充电量和时间
-        resp.setAmount(request.getDoneAmount());
+        resp.setAmount(amount);
         resp.setChargingStartTime(FormatUtils.LocalDateTime2Long(request.getStartChargingTime()));
-        // 在充电的话，endTime算当前时间。
-        resp.setChargingEndTime(System.currentTimeMillis());
-        resp.setChargingLastTime(resp.getChargingEndTime() - resp.getChargingStartTime());
 
-        //TODO: 算钱
+        Estimator estimator = new Estimator();
+        Duration leftTime = estimator.estimateCarLeftChargeTime(carId);
 
+        resp.setChargingLastTime(Duration.between(request.getStartChargingTime(), FormatUtils.getNowLocalDateTime()).getSeconds());
+        resp.setChargingEndTime(FormatUtils.LocalDateTime2Long(FormatUtils.getNowLocalDateTime().plus(leftTime)));
 
         return resp;
     }
-
-
 }

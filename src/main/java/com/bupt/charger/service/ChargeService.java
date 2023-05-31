@@ -35,6 +35,7 @@ public class ChargeService {
     @Autowired
     private ChargingQueueRepository chargingQueueRepository;
 
+    @Autowired
     private ScheduleService scheduleService;
 
     @Autowired
@@ -56,7 +57,7 @@ public class ChargeService {
         Car car = carRepository.findByCarId(carId);
 
         if (car.inChargingProcess()) {
-            throw new ApiException("车辆已经在充电啦");
+            throw new ApiException("车辆已经在充电进程啦");
         }
 
         // 检查等候区是否已经爆满
@@ -88,7 +89,7 @@ public class ChargeService {
         response.setCarState(car.getStatus().toString());
         response.setQueue(car.getQueueNo());
 
-        // 返回预计等待时间
+        // 预计等待时间
         Estimator es = new Estimator();
         var queueWaitingTime = es.estimateQueueWaitingTime(carId);
         response.setRequestTime(queueWaitingTime.getSeconds());
