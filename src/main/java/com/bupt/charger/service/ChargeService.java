@@ -44,6 +44,12 @@ public class ChargeService {
     @Autowired
     BillRepository billRepository;
 
+    @Autowired
+    Calculator calculator;
+
+    @Autowired
+    Estimator estimator;
+
     // 接收充电请求的所有处理
     public ChargeReqResponse chargeRequest(ChargeReqRequest chargeReqRequest) {
         log.info("User request charge: " + chargeReqRequest);
@@ -90,8 +96,7 @@ public class ChargeService {
         response.setQueue(car.getQueueNo());
 
         // 预计等待时间
-        Estimator es = new Estimator();
-        var queueWaitingTime = es.estimateQueueWaitingTime(carId);
+        var queueWaitingTime = estimator.estimateQueueWaitingTime(carId);
         response.setRequestTime(queueWaitingTime.getSeconds());
         return response;
     }
@@ -213,7 +218,6 @@ public class ChargeService {
         request.setStatus(ChargeRequest.Status.DONE);
 
         //计算实际充电量
-        Calculator calculator = new Calculator();
         LocalDateTime startTime = request.getStartChargingTime();
         double amount = calculator.getChargeAmount(startTime, endTime, request.getRequestMode());
         amount = min(amount, request.getRequestAmount());

@@ -2,6 +2,7 @@ package com.bupt.charger.controller;
 
 import com.bupt.charger.common.ApiResp;
 import com.bupt.charger.service.CarService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

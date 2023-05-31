@@ -9,12 +9,10 @@ import com.bupt.charger.repository.ChargeReqRepository;
 import com.bupt.charger.repository.ChargingQueueRepository;
 import com.bupt.charger.response.CarChargingResponse;
 import com.bupt.charger.response.CarStatusResponse;
-import com.bupt.charger.response.Resp;
 import com.bupt.charger.util.Calculator;
 import com.bupt.charger.util.Estimator;
 import com.bupt.charger.util.FormatUtils;
 import lombok.extern.java.Log;
-import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +36,12 @@ public class CarService {
 
     @Autowired
     private ChargeReqRepository chargeReqRepository;
+
+    @Autowired
+    private Estimator estimator;
+
+    @Autowired
+    private Calculator calculator;
 
     // -1 means error
     public double updateDoneAmount(String carId) {
@@ -64,6 +68,7 @@ public class CarService {
     //6.获取车队列的状态。
     public CarStatusResponse getCarStatus(String carId) {
         Car car = carRepository.findByCarId(carId);
+
         if (car == null) {
             throw new ApiException("车牌不存在");
         }
@@ -77,9 +82,8 @@ public class CarService {
         }
         resp.setCarState(car.getStatus().toString());
 
-        Estimator estimator = new Estimator();
-        updateDoneAmount(carId);
         if (car.getStatus() == Car.Status.charging) {
+            updateDoneAmount(carId);
             resp.setRequestTime(estimator.estimateCarLeftChargeTime(carId).getSeconds());
         } else {
             resp.setRequestTime(estimator.estimateQueueWaitingTime(carId).getSeconds());
@@ -89,11 +93,15 @@ public class CarService {
 
     }
 
-    //8. checkStatus，获取充电中的车的状态。
+    //8. checkStatus，获取充电中的车的队列状态。
     public CarChargingResponse getCarCharging(String carId) {
         Car car = carRepository.findByCarId(carId);
         if (car == null) {
             throw new ApiException("车牌不存在");
+        }
+
+        if (car.getStatus() != Car.Status.charging) {
+            throw new ApiException("车辆不在充电中");
         }
 
         CarChargingResponse resp = new CarChargingResponse();
@@ -117,7 +125,6 @@ public class CarService {
         resp.setAmount(amount);
         resp.setChargingStartTime(FormatUtils.LocalDateTime2Long(request.getStartChargingTime()));
 
-        Estimator estimator = new Estimator();
         Duration leftTime = estimator.estimateCarLeftChargeTime(carId);
 
         resp.setChargingLastTime(Duration.between(request.getStartChargingTime(), FormatUtils.getNowLocalDateTime()).getSeconds());

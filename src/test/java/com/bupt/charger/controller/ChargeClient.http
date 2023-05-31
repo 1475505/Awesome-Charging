@@ -3,7 +3,7 @@ POST http://localhost:6480/user/request
 Content-Type: application/json
 
 {
-  "car_id": "dick",
+  "car_id": "dicks",
   "request_amount": 4.38,
   "request_mode": "slow"
 }
@@ -24,4 +24,20 @@ Content-Type: application/json
 {
   "car_id": "test",
   "request_mode": "quick"
+}
+
+### 开始充电
+POST http://localhost:6480/user/startCharging
+Content-Type: application/json
+
+{
+  "car_id": "dick"
+}
+
+### 结束充电
+POST http://localhost:6480/user/stopCharging
+Content-Type: application/json
+
+{
+  "car_id": "klee"
 }

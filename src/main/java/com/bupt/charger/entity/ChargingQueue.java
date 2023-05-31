@@ -28,7 +28,6 @@ public class ChargingQueue {
     private String waitingCars; // 等待队列
 
 
-
     public List<String> getWaitingCarsList() {
         String input = waitingCars;
         List<String> resultList = new ArrayList<>();
@@ -107,6 +106,9 @@ public class ChargingQueue {
     // return -1 means NOTFOUND
     public int getQueueIdx(String carId) {
         List<String> queueCars = getWaitingCarsList();
+        if (queueCars.size() <= 0) {
+            return -1;
+        }
         for (int i = 0; i < queueCars.size(); i++) {
             if (queueCars.get(i).equals(carId)) {
                 return i + 1;

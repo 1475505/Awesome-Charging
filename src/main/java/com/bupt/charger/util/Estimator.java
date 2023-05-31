@@ -4,12 +4,12 @@ import com.bupt.charger.config.PileConfig;
 import com.bupt.charger.entity.Car;
 import com.bupt.charger.entity.ChargeRequest;
 import com.bupt.charger.entity.ChargingQueue;
+import com.bupt.charger.exception.ApiException;
 import com.bupt.charger.repository.CarRepository;
 import com.bupt.charger.repository.ChargeReqRepository;
 import com.bupt.charger.repository.ChargingQueueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
@@ -18,17 +18,24 @@ import java.time.Duration;
  */
 @Component
 public class Estimator {
-    @Autowired
-    CarRepository carRepository;
+
+    private final CarRepository carRepository;
+    private final ChargingQueueRepository chargingQueueRepository;
+    private final ChargeReqRepository chargeReqRepository;
+    private final PileConfig pileConfig;
 
     @Autowired
-    ChargingQueueRepository chargingQueueRepository;
-
-    @Autowired
-    ChargeReqRepository chargeReqRepository;
-
-    @Autowired
-    PileConfig pileConfig;
+    public Estimator(
+            CarRepository carRepository,
+            ChargingQueueRepository chargingQueueRepository,
+            ChargeReqRepository chargeReqRepository,
+            PileConfig pileConfig
+    ) {
+        this.carRepository = carRepository;
+        this.chargingQueueRepository = chargingQueueRepository;
+        this.chargeReqRepository = chargeReqRepository;
+        this.pileConfig = pileConfig;
+    }
 
     // 用来返回这辆车完整充电所需的时间，适合用于车没有在充电时进行估算
     public Duration estimateCarChargeTime(String carId) {
@@ -78,10 +85,12 @@ public class Estimator {
     }
 
     // 计算等候区的的预计等待时间
-    public Duration estimateQueueWaitingTime (String carId) {
+    public Duration estimateQueueWaitingTime(String carId) {
         Car car = carRepository.findByCarId(carId);
         ChargingQueue queue = chargingQueueRepository.findByQueueId(car.getQueueNo());
-
+        if (queue == null) {
+            throw new ApiException("出错啦，找客服");
+        }
 
         Duration result = Duration.ofSeconds(0);
 

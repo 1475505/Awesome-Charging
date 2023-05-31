@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 
-@ComponentScan("com.bupt")
 @SpringBootApplication
 public class ChargerApplication {
 	public static final Logger LOG = LoggerFactory.getLogger(ChargerApplication.class);

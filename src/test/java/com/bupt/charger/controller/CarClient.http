@@ -1,1 +1,4 @@
-GET localhost:6480/user/checkWaitQueue?car_id=nahida
+GET localhost:6480/user/checkWaitQueue?car_id=dick
+
+###
+GET localhost:6480/user/checkStatus?car_id=klee

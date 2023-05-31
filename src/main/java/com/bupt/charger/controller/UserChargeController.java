@@ -2,6 +2,7 @@ package com.bupt.charger.controller;
 
 import com.bupt.charger.common.ApiResp;
 import com.bupt.charger.exception.ApiException;
+import com.bupt.charger.request.CarRequest;
 import com.bupt.charger.request.ChargeReqRequest;
 import com.bupt.charger.request.ModifyChargeAmountRequest;
 import com.bupt.charger.request.ModifyChargeModeRequest;
@@ -52,7 +53,8 @@ public class UserChargeController {
     }
 
     @PostMapping("/startCharging")
-    public ResponseEntity<Object> startCharging(@RequestParam("car_id") String carId) {
+    public ResponseEntity<Object> startCharging(@RequestBody CarRequest request) {
+        String carId = request.getCarId();
         try {chargeService.startCharging(carId);
             return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
         } catch (ApiException e) {
@@ -61,7 +63,8 @@ public class UserChargeController {
     }
 
     @PostMapping("/stopCharging")
-    public ResponseEntity<Object> stopCharging(@RequestParam("car_id") String carId) {
+    public ResponseEntity<Object> stopCharging(@RequestBody CarRequest request) {
+        String carId = request.getCarId();
         try {
             chargeService.stopCharging(carId);
             return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
