@@ -32,8 +32,8 @@ public class ChargeRequest {
 
     public enum Status {
         INIT, //0, 表示这个请求尚未被处理
-        DOING, //1
-        DONE,  //2
+        DOING, //1，正在处理
+        DONE,  //2，处理完了
         OTHER  //3
     }
 

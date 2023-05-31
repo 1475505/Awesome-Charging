@@ -20,7 +20,9 @@ public class ChargingQueue {
 
     private String queueId;
 
-    private String waitingCars;
+    private int capacity; //队列上限
+
+    private String waitingCars; // 等待队列
 
     public List<String> getWaitingCarsList() {
         String input = waitingCars;
@@ -46,8 +48,7 @@ public class ChargingQueue {
 
     /* 若添加成功，返回true，否则false  */
     public boolean addWaitingCar(String id) {
-        final int WAITING_CAPACITY = 6;
-        if (getWaitingCarCnt() > WAITING_CAPACITY) {
+        if (getWaitingCarCnt() >= capacity) {
             return false;
         }
         if (waitingCars == null || waitingCars.isEmpty()) {
@@ -58,7 +59,7 @@ public class ChargingQueue {
         return false;
     }
 
-    public String consumeWaitingCar(String id) {
+    public String consumeWaitingCar() {
         if (waitingCars == null || waitingCars.isEmpty()) {
             return null;
         }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.security.auth.login.LoginException;
 import java.time.Duration;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -51,10 +52,10 @@ public class AdminService {
         if (pile == null) {
             throw new ApiException("不存在这个充电桩！");
         }
-        if (pile.getStatus() != Pile.Status.OFF) {
-            throw new ApiException("充电桩状态异常！");
+        if (pile.isON()) {
+            throw new ApiException("充电桩已经是开启状态");
         }
-        pile.setStatus(Pile.Status.UNRUNNING);
+        pile.setStatus(Pile.Status.FREE);
 
         pilesRepository.save(pile);
 
@@ -68,9 +69,14 @@ public class AdminService {
             throw new ApiException("不存在这个充电桩！");
         }
 
-        if (pile.getStatus() != Pile.Status.UNRUNNING) {
-            throw new ApiException("充电桩状态异常！");
+        if (!pile.isON()) {
+            throw new ApiException("充电桩并没有开");
         }
+
+        if (pile.getStatus() == Pile.Status.CHARGING) {
+            throw new ApiException("充电桩正在充电，请等待用户充电完成");
+        }
+
         pile.setStatus(Pile.Status.OFF);
 
         pilesRepository.save(pile);
@@ -86,7 +92,7 @@ public class AdminService {
             throw new ApiException("不存在这个充电桩！");
         }
         if (pile.getStatus() != Pile.Status.OFF) {
-            throw new ApiException("充电桩状态异常！");
+            throw new ApiException("充电桩不是关闭状态，不能操作");
         }
 
         var feePattern = setPileParametersRequest.getRule();
@@ -116,7 +122,7 @@ public class AdminService {
         if (pile == null) {
             throw new ApiException("未找到此充电桩");
         }
-        response.setWorkingState(pile.getStatus().ordinal());
+        response.setWorkingState(pile.getStatus().getValue());
         response.setTotalChargeNum(pile.getTotalChargeNum());
         response.setTotalChargeTime(pile.getTotalChargeTime());
         response.setTotalCapacity(pile.getTotalCapacity());
@@ -127,6 +133,7 @@ public class AdminService {
 
     @Autowired
     private CarRepository carRepository;
+
     public CheckChargerQueueResponse checkChargerQueue(String pileId) {
         log.info("Admin try to check charger queue: " + pileId);
 
@@ -137,8 +144,14 @@ public class AdminService {
             throw new ApiException("未找到此充电桩");
         }
 
-        List<Car> cars=carRepository.findAllByPileId(pileId);
-
+        List<String> qEles = pile.getQList();
+        List<Car> cars = new ArrayList<>();
+        for (String s : qEles) {
+            Car car = carRepository.findByCarId(s);
+            if (car != null) {
+                cars.add(car);
+            }
+        }
         response.setCars(cars);
 
         return response;
