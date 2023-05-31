@@ -63,7 +63,7 @@ public class ScheduleService {
     }
 
     // TODO: 检查充电桩队列是否存在空位,进行移进队列，需要实时检查，可以开辟额外线程
-    public void isChargingQueueHasEmpty() {
+    public void isChargingQueueHasEmpty(String queueId) {
         // 遍历所有充电桩的队列，查看是否有空位
         // TODO: 读取配置文件获取各个充电桩的个数
         int fastChargerNumber = 2;
@@ -74,8 +74,8 @@ public class ScheduleService {
         boolean tIsNeedMove = false;
         // 检查快充充电桩
         for (int i = 0; i < fastChargerNumber; i++) {
-            String queueId = "CF" + (char) ('A' + i);
-            ChargingQueue chargingQueue = chargingQueueRepository.findByQueueId(queueId);
+            String chargingQueueId = "CF" + (char) ('A' + i);
+            ChargingQueue chargingQueue = chargingQueueRepository.findByQueueId(chargingQueueId);
             if (chargingQueue.getWaitingCarCnt() < chargingQueue.getCapacity()) {
                 fIsNeedMove = true;
                 break;
@@ -84,8 +84,8 @@ public class ScheduleService {
 
         // 检查慢充充电桩
         for (int i = 0; i < slowChargerNumber; i++) {
-            String queueId = "CT" + (char) ('A' + i);
-            ChargingQueue chargingQueue = chargingQueueRepository.findByQueueId(queueId);
+            String chargingQueueId = "CT" + (char) ('A' + i);
+            ChargingQueue chargingQueue = chargingQueueRepository.findByQueueId(chargingQueueId);
             if (chargingQueue.getWaitingCarCnt() < chargingQueue.getCapacity()) {
                 tIsNeedMove = true;
                 break;
@@ -139,7 +139,7 @@ public class ScheduleService {
 
     // 将指定车辆从等候区移除
     public void removeFromWaitingQueue(String carId, ChargeRequest.RequestMode oldMode) {
-        String oldQueueId = "";
+        String oldQueueId;
         if (oldMode == ChargeRequest.RequestMode.FAST) {
             oldQueueId = "F";
         } else if (oldMode == ChargeRequest.RequestMode.SLOW) {
@@ -168,7 +168,7 @@ public class ScheduleService {
             return null;
         }
         //    获取空闲充电桩
-        int pileNum = 0;
+        int pileNum;
         if (midChar == 'F') {
             // TODO: 读取配置获得快充个数
             pileNum = 2;
