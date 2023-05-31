@@ -63,8 +63,15 @@ public class Car {
     private long handingReqId = -1;
     private String pileId;
 
+    public boolean canCharging() {
+        if (status == Status.waiting && area == Area.CHARGING) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean inChargingProcess() {
-        if (status != Status.COMPLETED && status != Status.OTHER) {
+        if (status != Status.OTHER && status != Status.COMPLETED) {
             return true;
         }
         return false;
