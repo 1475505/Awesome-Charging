@@ -6,6 +6,10 @@
 
 [接口文档](https://fsbupteducn.feishu.cn/docx/Hg3Tdv3N5oV8gxx5q8Jc6eYWn8e)
 
+[常见问题和规定](https://xydchcnnf8.feishu.cn/docx/TulYdfNEWokTFjx9xm5cKUrLnYd)
+
+[自定义接口](https://fsbupteducn.feishu.cn/docx/DGNidirGvocoDDxQCWRcuAAdn7b)
+
 ---
 
 ## 后端开发TODO
@@ -58,19 +62,23 @@
 - [x] 登出
 
 ### 管理员端
-- [ ] 启动充电桩
-- [ ] 运行充电桩
-- [ ] 关闭充电桩
+- [x] 管理员登录
+- [x] 管理员登出
+- [x] 启动充电桩
+- [x] 运行充电桩(阉割了，没用)
+- [x] 关闭充电桩
 
 ---
 
-- [ ] 设置充电桩参数
+- [x] 设置充电桩参数(计费规则,高峰时段单价,平时单价, 谷时单价,服务费用单价)
 
 ---
 
-- [ ] 查看充电桩状态
-- [ ] 查看指定充电桩队列状态
+- [x] 查看充电桩状态
+- [x] 查看指定充电桩队列状态
 
 ---
 
 - [ ] ~~生成报表~~
+
+

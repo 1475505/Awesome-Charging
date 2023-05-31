@@ -19,16 +19,19 @@ import static org.junit.jupiter.api.Assertions.*;
 */
 class LoginControllerTest {
 
-    private static final String LOGIN_URL = "http://localhost:6480/login";
+    private static final String LOGIN_URL = "http://localhost:6480/user/login";
     private static final String USERNAME = "test";
     private static final String PASSWORD = "test";
+
 
     @Test
     void test(){
         testLogin(USERNAME, PASSWORD);
         testLogin(USERNAME, "wrong_password");
     }
-    
+
+
+
     void testLogin(String username, String password) {
         try {
             // 设置请求体参数
@@ -43,4 +46,7 @@ class LoginControllerTest {
             e.printStackTrace();
         }
     }
+
+
+
 }

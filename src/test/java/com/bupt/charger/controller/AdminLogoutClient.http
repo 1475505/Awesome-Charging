@@ -1,0 +1,12 @@
+### correct logout
+POST http://localhost:6480/admin/logout
+Content-Type: application/json
+
+
+//这里需要传入一个参数adminName
+//但是如果传入错误的参数，也不会影响正确的登出
+
+{
+  "adminName": "admin"
+}
+
