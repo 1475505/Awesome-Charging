@@ -11,6 +11,7 @@ import com.bupt.charger.request.ChargeReqRequest;
 import com.bupt.charger.request.ModifyChargeAmountRequest;
 import com.bupt.charger.request.ModifyChargeModeRequest;
 import com.bupt.charger.response.ChargeReqResponse;
+import com.bupt.charger.util.Estimator;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,7 +59,9 @@ public class ChargeService {
             throw new ApiException("等候区已满");
         }
 
-        // 移到等候区
+        car.setHandingReqId(chargeRequest.getId());
+
+        // 否则移到等候区
         // 设置车辆状态
         car.setStatus(Car.Status.waiting);
         car.setArea(Car.Area.WAITING);
@@ -74,6 +77,9 @@ public class ChargeService {
         response.setCarState(car.getStatus().toString());
         response.setQueue(car.getQueueNo());
 
+        Estimator es = new Estimator();
+        var queueWaitingTime = es.estimateQueueWaitingTime(carId);
+        response.setRequestTime(queueWaitingTime.getSeconds());
         return response;
     }
 

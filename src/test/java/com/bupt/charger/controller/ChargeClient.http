@@ -3,9 +3,9 @@ POST http://localhost:6480/user/request
 Content-Type: application/json
 
 {
-  "car_id": "test",
-  "request_amount": 233.33,
-  "request_mode": "slow"
+  "car_id": "klee",
+  "request_amount": 2.33,
+  "request_mode": "fast"
 }
 
 ### modify charge amount

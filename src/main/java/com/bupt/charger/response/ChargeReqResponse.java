@@ -15,5 +15,5 @@ public class ChargeReqResponse extends Resp {
     @JsonProperty("queue_num")
     private String queue;
     @JsonProperty("request_time")
-    private int requestTime = -1;
+    private long requestTime = -1;
 }
