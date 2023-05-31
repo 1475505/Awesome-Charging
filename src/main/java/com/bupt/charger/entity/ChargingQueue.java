@@ -19,13 +19,12 @@ public class ChargingQueue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 直接映射为具体的表名字，不加映射关系就是和数据库中列名一样
     private String queueId;
 
-    private String waitingCars;
+    // TODO: 为充电桩队列的最大长度，默认值需要改为从配置文件读
+    private int capacity = 20; //队列上限
 
-    // TODO: 为充电桩队列的最大长度读取配置文件时设置这个值
-    private int capacity;
+    private String waitingCars; // 等待队列
 
     public List<String> getWaitingCarsList() {
         String input = waitingCars;
@@ -59,8 +58,7 @@ public class ChargingQueue {
 
     /* 若添加成功，返回true，否则false  */
     public boolean addWaitingCar(String id) {
-        // TODO: 容量应该是读取配置文件的,和capacity进行比较
-        if (getWaitingCarCnt() > capacity) {
+        if (getWaitingCarCnt() >= capacity) {
             return false;
         }
         if (waitingCars == null || waitingCars.isEmpty()) {

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 public class SpringDocConfig {
 
     private String title = "BUPT Charge Sys";
-    private String description = "authors: ll, ...";
+    private String description = "authors: ll,wxl,wyf ...";
     private String version = "v0.0.1";
 
     @Bean

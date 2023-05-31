@@ -13,5 +13,4 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     Bill findBillById(long billId);
     List<Bill> findAllByCarIdOrderByStartTime(String carId);
 
-
 }
