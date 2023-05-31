@@ -3,6 +3,7 @@ package com.bupt.charger.service;
 import com.bupt.charger.entity.Car;
 import com.bupt.charger.entity.ChargeRequest;
 import com.bupt.charger.entity.ChargingQueue;
+import com.bupt.charger.repository.CarRepository;
 import com.bupt.charger.repository.ChargeReqRepository;
 import com.bupt.charger.repository.ChargingQueueRepository;
 import lombok.extern.java.Log;
@@ -17,6 +18,8 @@ import java.util.List;
 public class ScheduleService {
 
     @Autowired
+    private CarRepository carRepository;
+    @Autowired
     private ChargingQueueRepository chargingQueueRepository;
 
     @Autowired
@@ -30,6 +33,10 @@ public class ScheduleService {
 
     // 添加到等候区队列，返回分配的号码
     public String moveToWaitingQueue(Car car) {
+        // 设置车辆状态
+        car.setStatus(Car.Status.waiting);
+        car.setArea(Car.Area.WAITING);
+        carRepository.save(car);
         // 根据类型查询等待区的队列
         ChargeRequest carRequest = chargeReqRepository.findTopByCarIdAndStatusOrderByCreatedAtDesc(car.getCarId(), ChargeRequest.Status.DOING);
         // 查看充电类型
@@ -88,18 +95,18 @@ public class ScheduleService {
         if (tIsNeedMove) {
             if (isWaitArea) {
                 //    执行基本调度
-                moveToChargingQueue("T", false);
+                moveToChargingQueue("T");
             } else {
                 //    执行故障调度
-                moveToChargingQueue("ErrorT", true);
+                moveToChargingQueue("ErrorT");
             }
         }
 
         if (fIsNeedMove) {
             if (isWaitArea) {
-                moveToChargingQueue("F", false);
+                moveToChargingQueue("F");
             } else {
-                moveToChargingQueue("ErrorF", true);
+                moveToChargingQueue("ErrorF");
             }
         }
 
@@ -109,16 +116,21 @@ public class ScheduleService {
     }
 
     // 进入充电区
-    public void moveToChargingQueue(String waitQueueId, boolean error) {
+    public void moveToChargingQueue(String waitQueueId) {
 
         ChargingQueue chargingQueue = chargingQueueRepository.findByQueueId(waitQueueId);
         String topCarId = chargingQueue.getTopCarId();
+        Car car = carRepository.findByCarId(topCarId);
+        // 设置车辆状态
+        car.setStatus(Car.Status.waiting);
+        car.setArea(Car.Area.CHARGING);
+        carRepository.save(car);
         if (topCarId != null && topCarId.equals("")) {
             //    执行调度策略
             // 从等待区移走
             chargingQueue.consumeWaitingCar();
             chargingQueueRepository.save(chargingQueue);
-            // 根据error选择时基础调度还是故障调度
+            // 无论是故障调度还是基本调度都是从一个等候队列到一个充电队列,选择时间最短的充电队列
             String assignQueueId = basicSchedule(topCarId, waitQueueId.endsWith("F") ? ChargeRequest.RequestMode.FAST : ChargeRequest.RequestMode.SLOW);
             //    TODO: 可以通知具体的车辆,也可以不通知
 
