@@ -20,7 +20,7 @@ public class ChargingQueue {
 
     private String queueId;
 
-    private int capacity; //队列上限
+    private int capacity = 20; //队列上限
 
     private String waitingCars; // 等待队列
 

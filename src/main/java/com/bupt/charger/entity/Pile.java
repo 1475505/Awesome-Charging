@@ -55,8 +55,8 @@ public class Pile {
 
     private Mode mode; // 这是个快充还是慢充桩
     private enum Mode {
-        F,
-        T
+        F, // 快充
+        T // 这个叫慢充，不知道是哪个单词，反正是慢充。对应文档
     }
 
     private int capacity = 10; // 队列上限
