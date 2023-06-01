@@ -49,8 +49,10 @@ public class Car {
         }
     }
 
+    // NOTE: 这个属性暂时废弃，后面测试没有问题可以删除
     private Queue queue = Queue.UNQUEUED;
 
+    // TODO: 这个是所在队列的号码，因为可能是故障队列/等候区队列，不一定分配到了充电桩
     private String queueNo;
 
     public enum Queue {
@@ -64,20 +66,16 @@ public class Car {
      * -1表示没有正在处理的请求。
      */
     private long handingReqId = -1;
+    // 这个是被分配的充电桩的id,只有被移入充电区分配指定充电桩才可以
     private String pileId;
 
     public boolean canCharging() {
-        if (status == Status.waiting && area == Area.CHARGING) {
-            return true;
-        }
-        return false;
+        // 需要位于充电去，且状态为waiting，同时是队列的第一个
+        return status == Status.waiting && area == Area.CHARGING;
     }
 
     public boolean inChargingProcess() {
-        if (status != Status.OTHER && status != Status.COMPLETED) {
-            return true;
-        }
-        return false;
+        return status != Status.OTHER && status != Status.COMPLETED;
     }
 
     public void releaseChargingProcess() {

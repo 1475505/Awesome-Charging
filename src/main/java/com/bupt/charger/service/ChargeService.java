@@ -88,10 +88,7 @@ public class ChargeService {
 
         // 有空位则移到等候区
         // 加入等待队列
-        String carQueueNo = scheduleService.moveToWaitingQueue(car);
-        car.setQueueNo(carQueueNo);
-
-        carRepository.save(car);
+        scheduleService.moveToWaitingQueue(car);
 
         ChargeReqResponse response = new ChargeReqResponse();
         response.setCarPosition(car.getArea().toString());
@@ -160,8 +157,6 @@ public class ChargeService {
         // 将该车从等候区中删除,然后添加到更改后模式的等候区中
         scheduleService.removeFromWaitingQueue(car.getCarId(), oldMode);
         String carQueueNo = scheduleService.moveToWaitingQueue(car);
-        car.setQueueNo(carQueueNo);
-        carRepository.save(car);
     }
 
     public void startCharging(String carId) {
@@ -170,18 +165,19 @@ public class ChargeService {
             throw new ApiException("车辆不存在");
         }
 
-        if (car.inChargingProcess()) {
+        // 检测车辆是对应队列的第一个才可以继续
+
+        if (car.inChargingProcess() && car.canCharging() &&
+                !car.getCarId().equals(pilesRepository.findByPileId(car.getPileId()).getQList().get(0))) {
             throw new ApiException("车辆目前的状态不可以开始充电哦");
         }
-
         var requestOptionalal = chargeReqRepository.findById(car.getHandingReqId());
         if (requestOptionalal.isEmpty()) {
             throw new ApiException("请先提交充电请求并等待处理");
         }
 
         ChargeRequest request = requestOptionalal.get();
-
-        // TODO，包含对car、chargeRequest、pile、queue等的调度和更新。
+        // 包含对car、chargeRequest、pile、queue等的调度和更新。
         // 1. 首先获取分配到的充电桩，basicSchedule函数应该是帮我们更新好了调度结果，并且已在充电桩入队。
         String targetPile = car.getPileId();
         Pile pile = pilesRepository.findByPileId(targetPile);
@@ -194,7 +190,14 @@ public class ChargeService {
         // 2. 更新车辆状态
         car.setStatus(Car.Status.charging);
 
-        //3. 通知结束充电。
+
+        // 充电请求的调度
+        Date now = SysTimer.getStartTime();
+        LocalDateTime startTime = now.toInstant().atZone(ZoneId.of("+8")).toLocalDateTime();
+        request.setStartChargingTime(startTime);
+
+
+        //3. 通知结束充电。这个是定时提醒前端的结束
         taskService.scheduleTask(carId, estimator.estimateCarChargeTime(carId).dividedBy(appConfig.TIME_SCALE_FACTOR), "你的电电应该充满啦~");
 
         carRepository.save(car);
@@ -221,16 +224,17 @@ public class ChargeService {
         // 标记充电请求为已完成
         ChargeRequest request = requestOptionalal.get();
 
-        // TODO: 在等候区取消充电
+        // 在等候区取消充电
         if (car.getArea() == Car.Area.WAITING) {
-            // TODO: 加宇移除相关队列
-
+            // 从等候区相关队列中移除该车辆
+            scheduleService.removeFromWaitingQueue(car.getCarId(), request.getRequestMode());
             car.releaseChargingProcess();
             request.setStatus(ChargeRequest.Status.CANCELED);
             chargeReqRepository.save(request);
             carRepository.save(car);
             return;
         }
+        // TODO: 需要考虑在充电区等待时停止充电如何处理，下面代码没有考虑这个情况
 
         request.setEndChargingTime(endTime);
         request.setStatus(ChargeRequest.Status.DONE);
@@ -266,12 +270,10 @@ public class ChargeService {
         pile.consumeWaitingCar();
         pilesRepository.save(pile);
 
-        // TODO：根据调度实现，是否还需要改别的状态和queue？
+        // 叫号队列中下一辆车开始充电
+        scheduleService.remindCarStartCharge(pile.getPileId());
 
-        // TODO：启动调度程序，叫号下一辆车开始充电
-
-        //    TODO: 结束充电后，检测相应等候队列是否有车辆，有车辆就直接通知相应车辆开始充电。
-        //    然后调用调度函数，将等候区的车辆移到充电区
-
+        // 结束充电后调用调度函数，将等候区的车辆移到充电区
+        scheduleService.moveToChargingQueue();
     }
 }
