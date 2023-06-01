@@ -1,5 +1,6 @@
 package com.bupt.charger.service;
 
+import com.bupt.charger.config.AppConfig;
 import com.bupt.charger.entity.*;
 import com.bupt.charger.exception.ApiException;
 import com.bupt.charger.repository.*;
@@ -49,6 +50,12 @@ public class ChargeService {
 
     @Autowired
     Estimator estimator;
+
+    @Autowired
+    AppConfig appConfig;
+
+    @Autowired
+    TaskService taskService;
 
     // 接收充电请求的所有处理
     public ChargeReqResponse chargeRequest(ChargeReqRequest chargeReqRequest) {
@@ -191,6 +198,9 @@ public class ChargeService {
         // 2. 更新车辆状态
         car.setStatus(Car.Status.charging);
 
+        //3. 通知结束充电。
+        taskService.scheduleTask(carId, estimator.estimateCarChargeTime(carId).dividedBy(appConfig.TIME_SCALE_FACTOR), "你的电电应该充满啦~");
+
         carRepository.save(car);
     }
 
@@ -200,8 +210,8 @@ public class ChargeService {
             throw new ApiException("车辆不存在");
         }
 
-        if (car.getStatus() != Car.Status.charging) {
-            throw new ApiException("车辆并未在充电");
+        if (!car.inChargingProcess()) {
+            throw new ApiException("车辆并未在充电进程中");
         }
 
         var requestOptionalal = chargeReqRepository.findById(car.getHandingReqId());
@@ -214,6 +224,18 @@ public class ChargeService {
 
         // 标记充电请求为已完成
         ChargeRequest request = requestOptionalal.get();
+
+        // TODO: 在等候区取消充电
+        if (car.getArea() == Car.Area.WAITING) {
+            // TODO: 加宇移除相关队列
+
+            car.releaseChargingProcess();
+            request.setStatus(ChargeRequest.Status.CANCELED);
+            chargeReqRepository.save(request);
+            carRepository.save(car);
+            return;
+        }
+
         request.setEndChargingTime(endTime);
         request.setStatus(ChargeRequest.Status.DONE);
 
@@ -240,12 +262,7 @@ public class ChargeService {
         billRepository.save(bill);
 
         // 释放车的充电状态
-        car.setStatus(Car.Status.COMPLETED);
-        car.setArea(Car.Area.COMPLETED);
-        car.setPileId("");
-        car.setQueue(Car.Queue.UNQUEUED);
-        car.setQueueNo("");
-        car.setHandingReqId(-1);
+        car.releaseChargingProcess();
         carRepository.save(car);
 
         // 释放充电桩的状态

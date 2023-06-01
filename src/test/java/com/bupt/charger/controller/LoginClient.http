@@ -3,8 +3,8 @@ POST http://localhost:6480/user/login
 Content-Type: application/json
 
 {
-  "username": "test",
-  "password": "test"
+  "username": "xd",
+  "password": "xd"
 }
 
 ### password error

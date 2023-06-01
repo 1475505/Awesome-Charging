@@ -60,6 +60,9 @@ public class Car {
         OTHER  //3
     }
 
+    /**
+     * -1表示没有正在处理的请求。
+     */
     private long handingReqId = -1;
     private String pileId;
 
@@ -77,4 +80,12 @@ public class Car {
         return false;
     }
 
+    public void releaseChargingProcess() {
+        this.setStatus(Car.Status.COMPLETED);
+        this.setArea(Car.Area.COMPLETED);
+        this.setPileId("");
+        this.setQueue(Car.Queue.UNQUEUED);
+        this.setQueueNo("");
+        this.setHandingReqId(-1);
+    }
 }
