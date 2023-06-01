@@ -22,9 +22,6 @@ public class ChargingQueue {
     // 直接映射为具体的表名字，不加映射关系就是和数据库中列名一样
     private String queueId;
 
-    // TODO: 为充电桩队列的最大长度，改为读取配置文件时设置这个值
-    private int capacity = 20; //队列上限
-
     private String waitingCars; // 等待队列
 
 
@@ -60,6 +57,8 @@ public class ChargingQueue {
 
     /* 若添加成功，返回true，否则false  */
     public boolean addWaitingCar(String id) {
+        // TODO： 读取等候区总容量的配置文件获取总长度
+        int capacity = 6;
         if (getWaitingCarCnt() >= capacity) {
             return false;
         }
