@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 @Component
-@ServerEndpoint("/ws/{token}")
+@ServerEndpoint("/ws/{username}")
 public class WebSocketServer {
     private static final Logger LOG = LoggerFactory.getLogger(WebSocketServer.class);
 
@@ -26,7 +26,7 @@ public class WebSocketServer {
      * 连接成功
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("token") String token) {
+    public void onOpen(Session session, @PathParam("username") String token) {
         map.put(token, session);
         this.token = token;
         LOG.info("有新连接：token：{}，session id：{}，当前连接数：{}", token, session.getId(), map.size());
@@ -71,5 +71,20 @@ public class WebSocketServer {
             LOG.info("推送消息：{}，内容：{}", token, message);
         }
     }
+
+    /**
+     * 单发消息
+     */
+    public void sendToUser(String token, String message) {
+        Session session = map.get(token);
+        try {
+            session.getBasicRemote().sendText(message);
+        } catch (IOException e) {
+            LOG.error("推送消息失败：{}，内容：{}", token, message);
+        }
+        LOG.info("推送消息：{}，内容：{}", token, message);
+        
+    }
+
 
 }
