@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
+import java.time.Duration;
 
 /**
  * @author ll （ created: 2023-05-26 19:38 )
@@ -48,7 +49,7 @@ public class UserService {
     }
 
     public UserLoginResponse login(String username, String password) throws LoginException {
-        log.info("User try to login: " + username);
+        System.out.println("User try to login: " + username);
         User user = userRepository.findByUsernameAndPassword(username, password);
         if (user == null) {
             throw new LoginException("用户名或密码错误");
