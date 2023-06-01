@@ -67,7 +67,7 @@ public class ChargingQueue {
         } else {
             waitingCars += "," + id;
         }
-        return false;
+        return true;
     }
 
     // 这个是出队列

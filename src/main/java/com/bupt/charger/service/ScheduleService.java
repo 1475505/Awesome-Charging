@@ -98,9 +98,9 @@ public class ScheduleService {
             return null;
         }
 
-        for (int i = 0; i < pileSum; i++) {
-            String chargingQueueId = prefixId + (char) ('A' + i);
-            Pile pile = pilesRepository.findByPileId(chargingQueueId);
+        List<Pile> piles = pilesRepository.findAll();
+        for (Pile pile : piles) {
+            // TODO：没有过滤充电桩的充电模式是否匹配！！
             //    如果没有达到容量就是有空余
             if (pile.getQCnt() < pile.getCapacity()) {
                 res.add(pile);

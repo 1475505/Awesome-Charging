@@ -98,7 +98,7 @@ public class Estimator {
         int throughput = 2; // TODO！！
         int idx = queue.getQueueIdx(carId);
         for (int i = 0; i < idx; i++) {
-            result = result.plus(estimateCarChargeTime(queue.getWaitingCarsList().get(idx)).dividedBy(throughput));
+            result = result.plus(estimateCarChargeTime(queue.getWaitingCarsList().get(i)).dividedBy(throughput));
         }
 
         // 还需要等多久才能进去充电

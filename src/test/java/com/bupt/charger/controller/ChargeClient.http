@@ -13,7 +13,7 @@ POST http://localhost:6480/user/modifyAmount
 Content-Type: application/json
 
 {
-  "car_id": "test",
+  "car_id": "",
   "request_amount": 648.88
 }
 

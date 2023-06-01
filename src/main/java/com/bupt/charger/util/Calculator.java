@@ -43,14 +43,13 @@ public class Calculator {
         double peak_price = pile.getPeakPrice(), usual_price = pile.getUsualPrice(), valley_price = pile.getValleyPrice();
         double serve_price = pile.getServePrice();
 
-        Pile.Mode pileMode; // 充电桩功率
-        pileMode = pile.getMode();
+        var pileMode = pile.getMode();
 
         double feePerUnitTime = 1; // 单位时间费用（这里假定为1元每小时）
         double powerPerUnitTime;
 
         double power;
-        if (pileMode.equals('F'))//这里是快充
+        if (pileMode == Pile.Mode.F)//这里是快充
         {
             powerPerUnitTime = fastratio;
         } else {
