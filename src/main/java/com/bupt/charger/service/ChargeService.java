@@ -10,6 +10,7 @@ import com.bupt.charger.request.ModifyChargeModeRequest;
 import com.bupt.charger.response.ChargeReqResponse;
 import com.bupt.charger.util.Calculator;
 import com.bupt.charger.util.Estimator;
+import com.bupt.charger.util.FormatUtils;
 import com.bupt.charger.util.SysTimer;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,8 +175,8 @@ public class ChargeService {
             throw new ApiException("车辆不存在");
         }
 
-        if (car.inChargingProcess()) {
-            throw new ApiException("车辆目前的状态不可以开始充电哦");
+        if (!car.inChargingProcess()) {
+            throw new ApiException("车辆未申请充电");
         }
 
         var requestOptionalal = chargeReqRepository.findById(car.getHandingReqId());
@@ -189,11 +190,15 @@ public class ChargeService {
         // 1. 首先获取分配到的充电桩，basicSchedule函数应该是帮我们更新好了调度结果，并且已在充电桩入队。
         String targetPile = car.getPileId();
         Pile pile = pilesRepository.findByPileId(targetPile);
+        if (pile == null) {
+            throw new ApiException("车辆没有被分配到的充电桩");
+        }
 //        if (!pile.getQList().get(0).equals(carId)) {
 //            throw new ApiException("当前充电桩没轮到此车充电");
 //        }
         pile.setStatus(Pile.Status.CHARGING);
         pilesRepository.save(pile);
+        request.setStartChargingTime(FormatUtils.getNowLocalDateTime());
 
         // 2. 更新车辆状态
         car.setStatus(Car.Status.charging);
@@ -222,17 +227,32 @@ public class ChargeService {
         Date now = SysTimer.getStartTime();
         LocalDateTime endTime = now.toInstant().atZone(ZoneId.of("+8")).toLocalDateTime();
 
+        taskService.cancelTask(carId);
+
         // 标记充电请求为已完成
         ChargeRequest request = requestOptionalal.get();
 
         // TODO: 在等候区取消充电
         if (car.getArea() == Car.Area.WAITING) {
             // TODO: 加宇移除相关队列
-
             car.releaseChargingProcess();
             request.setStatus(ChargeRequest.Status.CANCELED);
             chargeReqRepository.save(request);
             carRepository.save(car);
+            return;
+        }
+
+        String pileNo = car.getPileId();
+        Pile pile = pilesRepository.findByPileId(pileNo);
+
+        // TODO：车辆在充电区等候时取消充电，加宇移除相关队列
+        if (car.getArea() == Car.Area.CHARGING && car.getStatus() != Car.Status.charging) {
+            request.setStatus(ChargeRequest.Status.CANCELED);
+            chargeReqRepository.save(request);
+            car.releaseChargingProcess();
+            if (pile.getQueueIdx(carId) == 1) {
+                // TODO：这个状态是被提醒了的状态，停止等同于让出空位，需要调度后续车辆！！！
+            }
             return;
         }
 
@@ -244,9 +264,6 @@ public class ChargeService {
         double amount = calculator.getChargeAmount(startTime, endTime, request.getRequestMode());
         amount = min(amount, request.getRequestAmount());
         request.setDoneAmount(amount);
-
-        String pileNo = car.getPileId();
-        Pile pile = pilesRepository.findByPileId(pileNo);
 
         // 生成详单
         Bill bill = new Bill();

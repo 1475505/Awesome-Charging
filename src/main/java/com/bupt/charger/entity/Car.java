@@ -23,7 +23,7 @@ public class Car {
         COMPLETED, //0
         waiting,  //1
         pending,  //2
-        charging, //3
+        charging, //3，只有在车辆真正请求开始充电、开始计费时，才会进入此状态
         OTHER  //4
     }
 
