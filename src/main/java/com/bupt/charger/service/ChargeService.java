@@ -80,10 +80,6 @@ public class ChargeService {
         car.setHandingReqId(chargeRequest.getId());
 
         // 有空位则移到等候区
-        // 设置车辆状态
-        car.setStatus(Car.Status.waiting);
-        car.setArea(Car.Area.WAITING);
-
         // 加入等待队列
         String carQueueNo = scheduleService.moveToWaitingQueue(car);
         car.setQueueNo(carQueueNo);
@@ -256,5 +252,9 @@ public class ChargeService {
         // TODO：根据调度实现，是否还需要改别的状态和queue？
 
         // TODO：启动调度程序，叫号下一辆车开始充电
+
+        //    TODO: 结束充电后，检测相应等候队列是否有车辆，有车辆就直接通知相应车辆开始充电。
+        //    然后调用调度函数，将等候区的车辆移到充电区
+
     }
 }

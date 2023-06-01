@@ -4,21 +4,25 @@ import com.bupt.charger.entity.Car;
 import com.bupt.charger.entity.ChargeRequest;
 import com.bupt.charger.entity.ChargingQueue;
 import com.bupt.charger.entity.Pile;
+import com.bupt.charger.exception.ApiException;
 import com.bupt.charger.repository.CarRepository;
 import com.bupt.charger.repository.ChargeReqRepository;
 import com.bupt.charger.repository.ChargingQueueRepository;
 import com.bupt.charger.repository.PilesRepository;
+import com.bupt.charger.util.Estimator;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Log
 public class ScheduleService {
-
+    // TODO: 将所有充电区的队列放在pile的queue里面，等候区的才放在ChargingQueue里面
+    // TODO: car的pileId 的指向现在正在哪个充电桩的队列，调度函数负责更改这个状态。
     @Autowired
     private CarRepository carRepository;
     @Autowired
@@ -30,25 +34,26 @@ public class ScheduleService {
     @Autowired
     private PilesRepository pilesRepository;
 
+
+    @Autowired
+    private Estimator estimator;
     static int fSumNumber = 0;
     static int tSumNumber = 0;
 
     // 是否是否等候区叫号服务
-    static boolean isWaitArea = false;
+    static boolean isStopWaitArea = false;
 
     // 添加到等候区队列，返回分配的号码
     public String moveToWaitingQueue(Car car) {
         // 设置车辆状态
         car.setStatus(Car.Status.waiting);
         car.setArea(Car.Area.WAITING);
-        carRepository.save(car);
         // 根据类型查询等待区的队列
         ChargeRequest carRequest = chargeReqRepository.findTopByCarIdAndStatusOrderByCreatedAtDesc(car.getCarId(), ChargeRequest.Status.DOING);
         // 查看充电类型
         String queueId = "";
         String res = "";
         if (carRequest.getRequestMode() == ChargeRequest.RequestMode.SLOW) {
-            // 查看该类型下等候区队列车辆有多少
             queueId = "T";
             res = queueId + (++fSumNumber);
 
@@ -61,85 +66,66 @@ public class ScheduleService {
         }
         ChargingQueue waitQueue = chargingQueueRepository.findByQueueId(queueId);
         // 添加到相应的位置
-        waitQueue.addWaitingCar(car.getCarId());
-        // 保存到数据库
-        chargingQueueRepository.save(waitQueue);
+        if (waitQueue.addWaitingCar(car.getCarId())) {
+            // 保存到数据库
+            chargingQueueRepository.save(waitQueue);
+            carRepository.save(car);
+        } else {
+            throw new ApiException("等候区已经爆满不可进入");
+        }
+        // TODO: 调用调度函数
         return res;
     }
 
-    // TODO: 检查充电桩队列是否存在空位,进行移进队列，需要实时检查，可以开辟额外线程
-    public void isChargingQueueHasEmpty(String queueId) {
-        // 遍历所有充电桩的队列，查看是否有空位
-        // TODO: 读取配置文件获取各个充电桩的个数
-        int fastChargerNumber = 2;
-        int slowChargerNumber = 3;
+    // 获得有空余的充电队列
+    public List<Pile> getChargingNotFullQueue(Pile.Mode mode) {
+        // 根据模式检测相应充电区的充电队列是否有空余，有则添加
+        List<Pile> res = new ArrayList<>();
+        String prefixId = "";
+        int pileSum = 0;
+        if (mode == Pile.Mode.F) {
+            prefixId = "CF";
+            // TODO: 读取配置文件获取快充个数
+            pileSum = 2;
+        } else if (mode == Pile.Mode.T) {
+            prefixId = "CT";
+            // TODO: 读取配置文件获取快充个数
+            pileSum = 3;
+        } else {
+            log.info("充电类型错误");
+            return null;
+        }
 
-        // 是否需要移入充电区域
-        boolean fIsNeedMove = false;
-        boolean tIsNeedMove = false;
-        // 检查快充充电桩
-        for (int i = 0; i < fastChargerNumber; i++) {
-            String chargingQueueId = "CF" + (char) ('A' + i);
-            ChargingQueue chargingQueue = chargingQueueRepository.findByQueueId(chargingQueueId);
-            if (chargingQueue.getWaitingCarCnt() < chargingQueue.getCapacity()) {
-                fIsNeedMove = true;
-                break;
+        for (int i = 0; i < pileSum; i++) {
+            String chargingQueueId = prefixId + (char) ('A' + i);
+            Pile pile = pilesRepository.findByPileId(chargingQueueId);
+            //    如果没有达到容量就是有空余
+            if (pile.getQCnt() < pile.getCapacity()) {
+                res.add(pile);
             }
         }
-
-        // 检查慢充充电桩
-        for (int i = 0; i < slowChargerNumber; i++) {
-            String chargingQueueId = "CT" + (char) ('A' + i);
-            ChargingQueue chargingQueue = chargingQueueRepository.findByQueueId(chargingQueueId);
-            if (chargingQueue.getWaitingCarCnt() < chargingQueue.getCapacity()) {
-                tIsNeedMove = true;
-                break;
-            }
-        }
-
-        if (tIsNeedMove) {
-            if (isWaitArea) {
-                //    执行基本调度
-                moveToChargingQueue("T");
-            } else {
-                //    执行故障调度
-                moveToChargingQueue("ErrorT");
-            }
-        }
-
-        if (fIsNeedMove) {
-            if (isWaitArea) {
-                moveToChargingQueue("F");
-            } else {
-                moveToChargingQueue("ErrorF");
-            }
-        }
-
-        if (chargingQueueRepository.findByQueueId("ErrorT").getWaitingCarCnt() == 0 && chargingQueueRepository.findByQueueId("ErrorF").getWaitingCarCnt() == 0) {
-            isWaitArea = true;
-        }
+        return res;
     }
 
     // 进入充电区
-    public void moveToChargingQueue(String waitQueueId) {
+    public String moveToChargingQueue() {
+        // TODO: 以下情况会调用这个函数：1. 有车辆发送结束充电请求 2. 刚进入等候区（因为这个时候可能有多个充电队列空余）(TODO) 3. 提交故障请求时，因为可能其他多个充电队列空余，但故障仅发生在有车充电的充电桩里面了(TODO) 4. 充电桩故障完恢复上线时(暂时没有处理,TODO)
 
-        ChargingQueue chargingQueue = chargingQueueRepository.findByQueueId(waitQueueId);
-        String topCarId = chargingQueue.getTopCarId();
-        Car car = carRepository.findByCarId(topCarId);
-        // 设置车辆状态
-        car.setStatus(Car.Status.waiting);
-        car.setArea(Car.Area.CHARGING);
-        carRepository.save(car);
-        if (topCarId != null && topCarId.equals("")) {
-            //    执行调度策略
-            // 从等待区移走
-            chargingQueue.consumeWaitingCar();
-            chargingQueueRepository.save(chargingQueue);
-            // 无论是故障调度还是基本调度都是从一个等候队列到一个充电队列,选择时间最短的充电队列
-            String assignQueueId = basicSchedule(topCarId, waitQueueId.endsWith("F") ? ChargeRequest.RequestMode.FAST : ChargeRequest.RequestMode.SLOW);
-            //    TODO: 可以通知具体的车辆,也可以不通知
+        // TODO 检测相应队列是否有车辆，有车辆就直接通知相应车辆开始充电。然后调用调度函数，将等候区的车辆移到充电区
+        // 获取两个模式下的空余队列
+        List<Pile> fastPiles = getChargingNotFullQueue(Pile.Mode.F);
+        List<Pile> slowPiles = getChargingNotFullQueue(Pile.Mode.T);
 
+        if (fastPiles != null && fastPiles.size() > 0) {
+            return basicSchedule(fastPiles, Pile.Mode.F);
         }
+
+        if (slowPiles != null && slowPiles.size() > 0) {
+            return basicSchedule(slowPiles, Pile.Mode.T);
+        }
+
+        return null;
+
     }
 
     // 将指定车辆从等候区移除
@@ -159,100 +145,89 @@ public class ScheduleService {
     }
 
     // 基本调度策略
-    public String basicSchedule(String carId, ChargeRequest.RequestMode mode) {
-        //    被调度车辆完成充电所需时长最短进行选择空闲充电桩
-        //    筛选空闲充电桩
-        char midChar;
-        if (mode == ChargeRequest.RequestMode.FAST) {
-            midChar = 'F';
-        } else if (mode == ChargeRequest.RequestMode.SLOW) {
-            midChar = 'T';
+    public String basicSchedule(List<Pile> piles, Pile.Mode mode) {
+        String suffixId;
+        if (mode == Pile.Mode.T) {
+            suffixId = "T";
+        } else if (mode == Pile.Mode.F) {
+            suffixId = "F";
         } else {
-            //    出现错误BUG
-            log.info("调度策略-充电传入类型错误");
+            log.info("调度策略错误");
             return null;
         }
-        //    获取空闲充电桩
-        int pileNum;
-        if (midChar == 'F') {
-            // TODO: 读取配置获得快充个数
-            pileNum = 2;
+
+        String waitQueueId;
+        if (isStopWaitArea) {
+            waitQueueId = "Error" + suffixId;
         } else {
-            // TODO: 配置获取慢充个数
-            pileNum = 3;
+            waitQueueId = suffixId;
         }
-        // 空闲队列
-        ArrayList<ChargingQueue> queueHaveEmpty = new ArrayList<>();
-        for (int i = 0; i < pileNum; i++) {
-            String queueId = "C" + midChar + (char) ('A' + i);
-            ChargingQueue chargingQueue = chargingQueueRepository.findByQueueId(queueId);
-            if (chargingQueue.getWaitingCarCnt() < chargingQueue.getCapacity()) {
-                queueHaveEmpty.add(chargingQueue);
+
+        // 从等候区中寻找和这个充电桩充电模式匹配的队列，然后将第一个车辆调度过来
+        ChargingQueue waitQueue = chargingQueueRepository.findByQueueId(waitQueueId);
+        String topCarId = waitQueue.getTopCarId();
+        if (topCarId != null && topCarId.equals("")) {
+            Car car = carRepository.findByCarId(topCarId);
+            // 设置车辆状态
+            car.setStatus(Car.Status.waiting);
+            car.setArea(Car.Area.CHARGING);
+            // 执行调度策略
+            // 从等待区移走
+            waitQueue.consumeWaitingCar();
+            // 无论是故障调度还是基本调度都是从一个等候队列到一个充电队列,选择时间最短的充电队列
+            // 如果只有一个空闲队列，那么就直接调度到这个队列
+            Pile resPile;
+            if (piles.size() == 1) {
+                resPile = piles.get(0);
+            } else {
+                // 计算每个队列的充电总时间，选择总电量最少的那个充电桩
+                ArrayList<Duration> leftTimeList = new ArrayList<>();
+                for (Pile pile : piles) {
+                    //    获取队列中所有车辆
+                    List<String> carList = pile.getQList();
+                    //    计算所有车辆充完电需要的总时间
+                    Duration sumDuration = Duration.ZERO;
+                    for (int i = 0; i < carList.size(); i++) {
+                        if (i == 0) {
+                            Car chargingCar = carRepository.findByCarId(carList.get(i));
+                            //    检查这个车辆是否在充电中
+                            if (chargingCar.getStatus() == Car.Status.charging) {
+                                sumDuration = sumDuration.plus(estimator.estimateCarLeftChargeTime(chargingCar.getCarId()));
+                            } else {
+                                sumDuration = sumDuration.plus(estimator.estimateCarChargeTime(chargingCar.getCarId()));
+                            }
+                        } else {
+                            sumDuration = sumDuration.plus(estimator.estimateCarChargeTime(carList.get(i)));
+                        }
+                    }
+                    leftTimeList.add(sumDuration);
+                }
+                //    获取最小时间
+                int minIndex = 0;
+                Duration minDuration = leftTimeList.get(0);
+                for (int i = 0; i < leftTimeList.size(); i++) {
+                    if (leftTimeList.get(i).compareTo(minDuration) < 0) {
+                        minIndex = i;
+                    }
+                }
+                resPile = piles.get(minIndex);
             }
+
+
+            resPile.addCar(car.getCarId());
+            //    保存
+            pilesRepository.save(resPile);
+            carRepository.save(car);
+            chargingQueueRepository.save(waitQueue);
+            //    TODO: 可以通知具体的车辆,也可以不通知
+
+            return resPile.getPileId();
         }
-
-        //    获取所有空闲队列中所有车辆充完电需要的时间
-        // 如果只有一个空闲队列,那么就是这个了
-        if (queueHaveEmpty.size() == 1) {
-            ChargingQueue chargingQueue = queueHaveEmpty.get(0);
-            //    将车辆加入到该充电桩的队列中
-            chargingQueue.addWaitingCar(carId);
-            //    保存到数据库
-            chargingQueueRepository.save(chargingQueue);
-            return chargingQueue.getQueueId();
-        }
-        // 这里正在充电的车辆直接是在队列第一个。
-        ArrayList<Double> amountList = new ArrayList<>();
-        for (ChargingQueue chargingQueue : queueHaveEmpty) {
-            //    获取队列中所有车辆
-            List<String> carList = chargingQueue.getWaitingCarsList();
-            //    计算所有车辆充完电需要的总电量
-            double sumAmount = 0;
-            for (String car : carList) {
-                //    获取该车辆的充电请求
-                ChargeRequest chargeRequest = chargeReqRepository.findTopByCarIdAndStatusOrderByCreatedAtDesc(car, ChargeRequest.Status.DOING);
-                //    计算该车辆充完电需要的时间
-                sumAmount += chargeRequest.getRequestAmount();
-            }
-            amountList.add(sumAmount);
-        }
-
-        //    获取最小电量
-        double minAmount = Double.MAX_VALUE;
-        int minIndex = 0;
-        for (int i = 0; i < amountList.size(); i++) {
-            if (amountList.get(i) < minAmount) {
-                minAmount = amountList.get(i);
-                minIndex = i;
-            }
-        }
-
-        //    获取最小时间对应的充电桩
-        ChargingQueue chargingQueue = queueHaveEmpty.get(minIndex);
-        //    将车辆加入到该充电桩的队列中
-        chargingQueue.addWaitingCar(carId);
-
-        // 刘亮乱改的，不知道对不对：
-        Car car = carRepository.findByCarId(carId);
-        car.setArea(Car.Area.CHARGING);
-        car.setQueue(Car.Queue.CHARGING);
-        car.setStatus(Car.Status.charging);
-        String pileId = chargingQueue.getQueueId().substring(2); //是这么获取吗？
-        car.setPileId(pileId);
-        Pile pile = pilesRepository.findByPileId(pileId);
-        pile.addCar(carId);
-        pilesRepository.save(pile);
-
-        //    保存到数据库
-        chargingQueueRepository.save(chargingQueue);
-        //    返回充电桩的队列号
-        return chargingQueue.getQueueId();
-
+        return null;
     }
 
 /*  TODO: 获取故障上报请求,也可管理员端直接进行,暂停正在充电的车辆,同时转移队列到故障队列
     注意一个问题: 优先级调度就是将对应的原充电桩队列转移到相应模式的故障队列,但是时间顺序队列需要将同类型的所有没在充电的车辆全部汇集到故障队列里面,同时需要按照车辆排队号码进行排序,数字越大越靠后.汇聚之后将原来的队列清空,因为我们有实时检测是否有队列空的,自然就会从故障队列里面加回去
  */
-
 
 }
