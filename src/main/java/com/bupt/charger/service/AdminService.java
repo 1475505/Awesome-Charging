@@ -146,6 +146,7 @@ public class AdminService {
 
         List<String> qEles = pile.getQList();
         List<Car> cars = new ArrayList<>();
+        log.info("cars: " + qEles);
         for (String s : qEles) {
             Car car = carRepository.findByCarId(s);
             if (car != null) {
