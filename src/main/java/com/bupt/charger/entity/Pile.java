@@ -59,7 +59,7 @@ public class Pile {
         T // 这个叫慢充，不知道是哪个单词，反正是慢充。对应文档
     }
 
-    private int capacity = 10; // 队列上限
+    private int capacity = 2; // 队列上限
     private String carQueue; // 第一个是充电中的车辆，后面是等待的车辆
 
     public boolean isON() {

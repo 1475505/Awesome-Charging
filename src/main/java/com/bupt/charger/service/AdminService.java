@@ -11,6 +11,7 @@ import com.bupt.charger.repository.AdminRepository;
 import io.swagger.annotations.Api;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
@@ -158,5 +159,70 @@ public class AdminService {
         return response;
     }
 
+
+    /**
+     * 管理员初始化数据库
+     * @return null
+     */
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public InitDataBaseResponse initDataBase(InitDataBaseRequest initDataBaseRequest) {
+        log.info("Admin try to init database.");
+        InitDataBaseResponse response = new InitDataBaseResponse();
+
+
+        String tableName;
+        tableName = "test";
+        jdbcTemplate.update("TRUNCATE TABLE " + tableName);
+        log.info("Admin try to TRUNCATE TABLE: " + tableName);
+
+
+        /**
+         * 现在还要写初始化设置
+         * 快充速度：30
+         * 慢充速度：7
+         * 峰值价格：1。0元
+         * 平时价格：0.7元
+         * 谷时价格：0.4元
+         * 服务费：0.8元
+         * 充电桩数量：2（快）,（3）慢
+         * 充电桩排队队列长度：2
+         * 等候区最大容量：6
+         * 充电桩命名：f1，f2，t1，t2，t3
+         */
+
+
+
+
+//        tableName="bills";
+//        jdbcTemplate.update("TRUNCATE TABLE " + tableName);
+//        log.info("Admin try to TRUNCATE TABLE: " + tableName);
+//
+//        tableName="cars";
+//        jdbcTemplate.update("TRUNCATE TABLE " + tableName);
+//        log.info("Admin try to TRUNCATE TABLE: " + tableName);
+//
+//        tableName="piles";
+//        jdbcTemplate.update("TRUNCATE TABLE " + tableName);
+//        log.info("Admin try to TRUNCATE TABLE: " + tableName);
+//
+//        tableName="queues";
+//        jdbcTemplate.update("TRUNCATE TABLE " + tableName);
+//        log.info("Admin try to TRUNCATE TABLE: " + tableName);
+//
+//        tableName="requests";
+//        jdbcTemplate.update("TRUNCATE TABLE " + tableName);
+//        log.info("Admin try to TRUNCATE TABLE: " + tableName);
+//
+//        tableName="users";
+//        jdbcTemplate.update("TRUNCATE TABLE " + tableName);
+//        log.info("Admin try to TRUNCATE TABLE: " + tableName);
+
+
+        response.setDbResp("initial ok");
+
+        return response;
+    }
 
 }

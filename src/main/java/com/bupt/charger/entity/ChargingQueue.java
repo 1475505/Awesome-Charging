@@ -23,7 +23,7 @@ public class ChargingQueue {
     private String queueId;
 
     // TODO: 为充电桩队列的最大长度，改为读取配置文件时设置这个值
-    private int capacity = 20; //队列上限
+    private int capacity = 6; //队列上限
 
     private String waitingCars; // 等待队列
 
