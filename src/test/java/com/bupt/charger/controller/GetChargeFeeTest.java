@@ -48,7 +48,7 @@ public class GetChargeFeeTest {
 
 
         // 使用 Mockito.when() 和 thenReturn() 对 getPileById 方法进行模拟
-        when(pilesRepository.findByPileId("test")).thenReturn(pile);
+//        when(pilesRepository.findByPileId("test")).thenReturn(pile);
 
         System.out.println(c.getChargeFee(
                 LocalDateTime.parse("2023-06-01T11:06:00"),

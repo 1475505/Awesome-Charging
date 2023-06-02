@@ -18,6 +18,7 @@ public class ChargerApplication {
 		SpringApplication app = new SpringApplication(ChargerApplication.class);
 		Environment env = app.run(args).getEnvironment();
 		LOG.info("启动成功： http://localhost:{}", env.getProperty("server.port") + "/v3/api-docs");
+
 		SysTimer st = new SysTimer();
 		st.startClock();
 	}

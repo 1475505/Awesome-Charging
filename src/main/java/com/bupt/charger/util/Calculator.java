@@ -36,7 +36,7 @@ public class Calculator {
         Pile pile = pilesRepository.findByPileId(pileId);
         // 接下来是判断time在哪个时间段，切割计费。注意以pile的功率为准。
         // Attention: 根据amount算时长，endTime暂时理解成不需要
-        // TODO
+        // TODO:这里暂时没测试，不知道正确性如何
         //这里是每10秒钟消耗的度数
         double fastratio = 30 / 360, slowratio = 7 / 360;
         //谷时、峰时、常时、服务费
