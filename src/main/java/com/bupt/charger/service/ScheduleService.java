@@ -112,7 +112,7 @@ public class ScheduleService {
 
 
     // 进入充电区
-    public String moveToChargingQueue() {
+    public void moveToChargingQueue() {
         // TODO: 以下情况会调用这个函数：1. 有车辆发送结束充电请求 2. 刚进入等候区（因为这个时候可能有多个充电队列空余） 3. 提交故障请求时，因为可能其他多个充电队列空余，但故障仅发生在有车充电的充电桩里面了(TODO) 4. 充电桩故障完恢复上线时(暂时没有处理,TODO)
 
         // 获取两个模式下的空余队列
@@ -120,15 +120,12 @@ public class ScheduleService {
         List<Pile> slowPiles = getChargingNotFullQueue(Pile.Mode.T);
 
         if (fastPiles != null && fastPiles.size() > 0) {
-            return basicSchedule(fastPiles, Pile.Mode.F);
+            basicSchedule(fastPiles, Pile.Mode.F);
         }
 
         if (slowPiles != null && slowPiles.size() > 0) {
-            return basicSchedule(slowPiles, Pile.Mode.T);
+            basicSchedule(slowPiles, Pile.Mode.T);
         }
-
-        return null;
-
     }
 
     // 将指定车辆从等候区移除
@@ -171,6 +168,12 @@ public class ScheduleService {
 
         // 从等候区中寻找和这个充电桩充电模式匹配的队列，然后将第一个车辆调度过来
         ChargingQueue waitQueue = chargingQueueRepository.findByQueueId(waitQueueId);
+        // 测试，打印等候区所有车
+        System.out.println("打印等候区所有车" + waitQueueId);
+        for (var carId : waitQueue.getWaitingCarsList()) {
+            System.out.println(carId);
+        }
+
 
         // 从等待区移走
         String topCarId = waitQueue.consumeWaitingCar();
@@ -216,8 +219,11 @@ public class ScheduleService {
                 }
                 resPile = piles.get(minIndex);
             }
-
-            resPile.addCar(car.getCarId());
+            // 测试
+            System.out.println("打印分配到的pile" + resPile.getPileId());
+            if (!resPile.addCar(car.getCarId())) {
+                System.out.println("出现异常，明明有空余，但是却无法添加");
+            }
 
             // 设置车辆状态
             car.setStatus(Car.Status.waiting);
