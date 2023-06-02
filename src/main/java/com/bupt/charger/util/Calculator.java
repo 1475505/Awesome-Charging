@@ -6,7 +6,6 @@ import com.bupt.charger.entity.Pile;
 import com.bupt.charger.repository.PilesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -65,7 +64,6 @@ public class Calculator {
         double remainingAmount = amount;//充电剩余电量
 
 
-
         for (LocalDateTime time = startTime; time.isBefore(endTime); time = time.plusSeconds(10)) {
             //这里给费用赋值
             if ((time.getHour() >= 10 && time.getHour() < 15) ||
@@ -80,7 +78,7 @@ public class Calculator {
                 feePerUnitTime = valley_price;
             }
             //所有单位费用均加上服务费
-            feePerUnitTime+=serve_price;
+            feePerUnitTime += serve_price;
 
             remainingAmount = remainingAmount - powerPerUnitTime; // 剩余电量
             if (remainingAmount >= 0) {

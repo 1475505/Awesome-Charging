@@ -10,18 +10,21 @@ import com.bupt.charger.repository.ChargeReqRepository;
 import com.bupt.charger.repository.ChargingQueueRepository;
 import com.bupt.charger.repository.PilesRepository;
 import com.bupt.charger.util.Estimator;
+import com.bupt.charger.util.FormatUtils;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 @Log
 public class ScheduleService {
     // note: 将所有充电区的队列放在pile的queue里面，等候区的才放在ChargingQueue里面
+    // TODO: 考虑充电桩状态，必须是活动状态才可被查询到
     @Autowired
     private CarRepository carRepository;
     @Autowired
@@ -47,8 +50,8 @@ public class ScheduleService {
         // 根据类型查询等待区的队列
         ChargeRequest carRequest = chargeReqRepository.findTopByCarIdAndStatusOrderByCreatedAtDesc(car.getCarId(), ChargeRequest.Status.DOING);
         // 查看充电类型
-        String queueId = "";
-        String res = "";
+        String queueId;
+        String res;
         if (carRequest.getRequestMode() == ChargeRequest.RequestMode.SLOW) {
             queueId = "T";
             res = queueId + (++fSumNumber);
@@ -68,6 +71,7 @@ public class ScheduleService {
             car.setStatus(Car.Status.waiting);
             car.setArea(Car.Area.WAITING);
             car.setQueueNo(waitQueue.getQueueId());
+            car.setEnWaitingQTime(FormatUtils.getNowLocalDateTime());
             // 保存到数据库
             chargingQueueRepository.save(waitQueue);
             carRepository.save(car);
@@ -118,7 +122,12 @@ public class ScheduleService {
         // 获取两个模式下的空余队列
         List<Pile> fastPiles = getChargingNotFullQueue(Pile.Mode.F);
         List<Pile> slowPiles = getChargingNotFullQueue(Pile.Mode.T);
-
+        // 如果两个故障队列都空了，那么恢复叫号服务
+        ChargingQueue errorF = chargingQueueRepository.findByQueueId("ErrorF");
+        ChargingQueue errorT = chargingQueueRepository.findByQueueId("ErrorT");
+        if (errorT.getWaitingCarCnt() == 0 && errorF.getWaitingCarCnt() == 0) {
+            isStopWaitArea = false;
+        }
         if (fastPiles != null && fastPiles.size() > 0) {
             basicSchedule(fastPiles, Pile.Mode.F);
         }
@@ -180,7 +189,7 @@ public class ScheduleService {
         if (topCarId != null && topCarId.length() > 0) {
             Car car = carRepository.findByCarId(topCarId);
             // 执行调度策略
-            // 无论是故障调度还是基本调度都是从一个等候队列到一个充电队列,选择时间最短的充电队列
+            // 无论是故障调度还是基本调度都是从一个等候队列到一个充电队列,选择总时间最短的充电队列
             // 如果只有一个空闲队列，那么就直接调度到这个队列
             Pile resPile;
             if (piles.size() == 1) {
@@ -246,8 +255,107 @@ public class ScheduleService {
         return null;
     }
 
-/*  TODO: 获取故障上报请求,也可管理员端直接进行,暂停正在充电的车辆,同时转移队列到故障队列
-    注意一个问题: 优先级调度就是将对应的原充电桩队列转移到相应模式的故障队列,但是时间顺序队列需要将同类型的所有没在充电的车辆全部汇集到故障队列里面,同时需要按照车辆排队号码进行排序,数字越大越靠后.汇聚之后将原来的队列清空,因为我们有实时检测是否有队列空的,自然就会从故障队列里面加回去
- */
+    /*  TODO: 获取故障上报请求,也可管理员端直接进行,暂停正在充电的车辆,同时转移队列到故障队列
+        注意一个问题: 优先级调度就是将对应的原充电桩队列转移到相应模式的故障队列,但是时间顺序队列需要将同类型的所有没在充电的车辆全部汇集到故障队列里面,同时需要按照车辆排队号码进行排序,数字越大越靠后.汇聚之后将原来的队列清空,因为我们有实时检测是否有队列空的,自然就会从故障队列里面加回去
+     */
+//    故障-优先级调度移动队列
+    public void priorityErrorMoveQueue(String pileId) {
+        // TODO: 设置充电桩为故障状态
+
+        //   优先级调度就是将对应的原充电桩队列转移到相应模式的故障队列
+        //    暂停正常移进充电区服务
+        isStopWaitArea = true;
+        Pile pile = pilesRepository.findByPileId(pileId);
+
+        // 选择指定模式的故障队列
+        ChargingQueue errorQueue;
+        if (pile.mode.equals(Pile.Mode.F)) {
+            errorQueue = chargingQueueRepository.findByQueueId("ErrorF");
+        } else {
+            errorQueue = chargingQueueRepository.findByQueueId("ErrorT");
+        }
+
+        int len = pile.getQCnt();
+        for (int i = 0; i < len; i++) {
+            String carId = pile.consumeWaitingCar();
+            errorQueue.addWaitingCar(carId);
+        }
+        //    保存数据库
+        pilesRepository.save(pile);
+        chargingQueueRepository.save(errorQueue);
+
+    }
+
+    //    故障-时间顺序调度移动队列
+    public void timeErrorMoveQueue(String pileId) {
+        isStopWaitArea = true;
+        Pile pile = pilesRepository.findByPileId(pileId);
+
+        // 选择指定模式的故障队列
+        ChargingQueue errorQueue;
+        if (pile.mode.equals(Pile.Mode.F)) {
+            errorQueue = chargingQueueRepository.findByQueueId("ErrorF");
+        } else {
+            errorQueue = chargingQueueRepository.findByQueueId("ErrorT");
+        }
+
+        List<Car> cars = new ArrayList<>();
+        // 先把该充电桩的所有车辆进来
+        int len = pile.getQCnt();
+        for (int i = 0; i < len; i++) {
+            String carId = pile.consumeWaitingCar();
+            cars.add(carRepository.findByCarId(carId));
+        }
+        // 保存
+        pilesRepository.save(pile);
+
+        // 时间顺序队列需要将同类型的所有没在充电的车辆全部汇集到故障队列里面,同时需要按照车辆排队号码进行排序,数字越大越靠后.汇聚之后将原来的队列清空,因为我们有实时检测是否有队列空的,自然就会从故障队列里面加回去
+        // 筛选所有同类型的充电桩
+        List<Pile> allPiles = pilesRepository.findAll();
+        for (Pile tmpPile : allPiles) {
+            if (!tmpPile.getPileId().equals(pile.getPileId()) && tmpPile.getMode().equals(pile.getMode())) {
+                // 把这个同类型的充电桩(不能包括自己)所有没有在充电的车辆放到cars数组
+                int tmpLen = tmpPile.getQCnt();
+                // 避免引用传递，需要额外开辟空间复制
+                List<String> tmpCarIdList = new ArrayList<>(tmpPile.getQList());
+                // 清空pile中所有车辆
+                tmpPile.setCarQueue("");
+                //  单独检测第一个
+                if (tmpLen > 0) {
+                    Car tmpCar = carRepository.findByCarId(tmpCarIdList.get(0));
+                    // 不在充电中才加入
+                    if (!tmpCar.getStatus().equals(Car.Status.charging)) {
+                        cars.add(tmpCar);
+                    } else {
+                        //    第一个在充电，那么加回去
+                        tmpPile.addCar(tmpCar.getCarId());
+                    }
+                }
+                //  从第二个开始
+                for (int i = 1; i < tmpLen; i++) {
+                    Car tmpCar = carRepository.findByCarId(tmpCarIdList.get(i));
+                    cars.add(tmpCar);
+                }
+                //  保存充电桩队列
+                pilesRepository.save(tmpPile);
+            }
+        }
+
+        //    按照Car类里面enWaitingQTime进入等候区时间进行排序
+        cars.sort(new Comparator<Car>() {
+            @Override
+            public int compare(Car o1, Car o2) {
+                return o2.getEnWaitingQTime().compareTo(o1.getEnWaitingQTime());
+            }
+        });
+
+        //    按顺序写入到故障队列
+        for (Car car : cars) {
+            errorQueue.addWaitingCar(car.getCarId());
+        }
+        //    保存
+        chargingQueueRepository.save(errorQueue);
+
+    }
 
 }

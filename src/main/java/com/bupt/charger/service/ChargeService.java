@@ -206,6 +206,7 @@ public class ChargeService {
         carRepository.save(car);
     }
 
+    // 这个时用户调用的停止充电请求，和故障管理员调用的不一样
     public void stopCharging(String carId) {
         Car car = carRepository.findByCarId(carId);
         if (car == null) {
@@ -290,5 +291,11 @@ public class ChargeService {
 
         // 结束充电后调用调度函数，将等候区的车辆移到充电区
         scheduleService.moveToChargingQueue();
+    }
+
+
+    // TODO: 这个是故障机制中，管理员需要调用的停止充电
+    public void errorStopCharging(String carId) {
+
     }
 }
