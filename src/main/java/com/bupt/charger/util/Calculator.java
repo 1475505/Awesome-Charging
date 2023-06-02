@@ -83,7 +83,7 @@ public class Calculator {
             remainingAmount = remainingAmount - powerPerUnitTime; // 剩余电量
             if (remainingAmount >= 0) {
                 // 汽车未充满
-                totalFee += feePerUnitTime;
+                totalFee += feePerUnitTime / 360;
             }
         }
 
