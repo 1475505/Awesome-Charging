@@ -16,11 +16,15 @@ import java.time.LocalDateTime;
  */
 @Component
 public class Calculator {
-    @Autowired
-    PileConfig pileConfig;
+
+    private final PileConfig pileConfig;
+    private final PilesRepository pilesRepository;
 
     @Autowired
-    PilesRepository pilesRepository;
+    public Calculator(PileConfig pileConfig, PilesRepository pilesRepository) {
+        this.pileConfig = pileConfig;
+        this.pilesRepository = pilesRepository;
+    }
 
     public double getChargeAmount(LocalDateTime start, LocalDateTime end, ChargeRequest.RequestMode mode) {
         long seconds = Duration.between(start, end).getSeconds();

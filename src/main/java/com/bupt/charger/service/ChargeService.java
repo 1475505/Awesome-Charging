@@ -16,6 +16,7 @@ import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -58,6 +59,9 @@ public class ChargeService {
     @Autowired
     TaskService taskService;
 
+    @Autowired
+    CarService carService;
+
     // 接收充电请求的所有处理
     public ChargeReqResponse chargeRequest(ChargeReqRequest chargeReqRequest) {
         log.info("User request charge: " + chargeReqRequest);
@@ -97,8 +101,18 @@ public class ChargeService {
         response.setQueue(car.getQueueNo());
 
         // 预计等待时间
-        var queueWaitingTime = estimator.estimateQueueWaitingTime(carId);
-        response.setRequestTime(queueWaitingTime.getSeconds());
+        if (car.getArea() == Car.Area.WAITING) {
+            var queueWaitingTime = estimator.estimateQueueWaitingTime(carId);
+            response.setRequestTime(queueWaitingTime.getSeconds());
+        } else if (car.getArea() == Car.Area.CHARGING) {
+            Pile pile = pilesRepository.findByPileId(car.getPileId());
+            int idx = pile.getQueueIdx(carId);
+            if (idx == 1) {
+                taskService.scheduleTask(carId, Duration.ZERO, "可以开始充电啦");
+            }
+            var chargingWaitingTime = estimator.estimateChargingQueueWaitingTime(carId);
+            response.setRequestTime(chargingWaitingTime.getSeconds());
+        }
         return response;
     }
 
@@ -226,7 +240,6 @@ public class ChargeService {
 
         taskService.cancelTask(carId);
 
-        // 标记充电请求为已完成
         ChargeRequest request = requestOptionalal.get();
 
         // 在等候区取消充电
@@ -254,14 +267,13 @@ public class ChargeService {
             return;
         }
 
-        request.setEndChargingTime(endTime);
-        request.setStatus(ChargeRequest.Status.DONE);
-
         //计算实际充电量
         LocalDateTime startTime = request.getStartChargingTime();
-        double amount = calculator.getChargeAmount(startTime, endTime, request.getRequestMode());
-        amount = min(amount, request.getRequestAmount());
-        request.setDoneAmount(amount);
+        double amount = carService.updateDoneAmount(carId);
+
+        request.setEndChargingTime(endTime);
+        request.setStatus(ChargeRequest.Status.DONE);
+        chargeReqRepository.save(request);
 
         // 生成详单
         Bill bill = new Bill();

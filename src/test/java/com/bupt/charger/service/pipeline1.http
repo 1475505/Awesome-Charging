@@ -1,8 +1,4 @@
-### init
-GET localhost:6480/user/checkStatus?car_id=klee
-
-> {% client.global.set("car", "test5"); %}
-
+### 在这之前，修改http-client.env.json的car，然后，上面Run with选dev。成为全局变量
 ### signup
 POST http://localhost:6480/signup
 Content-Type: application/json
@@ -20,8 +16,8 @@ Content-Type: application/json
 
 {
   "car_id": "{{car}}",
-  "request_amount": 4.38,
-  "request_mode": "slow"
+  "request_amount": 6.48,
+  "request_mode": "quick"
 }
 
 
@@ -39,4 +35,28 @@ Content-Type: application/json
 
 {
   "car_id": "{{car}}"
+}
+
+### 获取等待状态
+GET localhost:6480/user/checkWaitQueue?car_id={{car}}
+
+### 获取充电区队列状态
+GET localhost:6480/user/checkStatus?car_id={{car}}
+
+### 修改充电量
+POST http://localhost:6480/user/modifyAmount
+Content-Type: application/json
+
+{
+  "car_id": "{{car}}",
+  "request_amount": 648.88
+}
+
+### modify charge mode
+POST http://localhost:6480/user/chMode
+Content-Type: application/json
+
+{
+  "car_id": "{{car}}",
+  "request_mode": "quick"
 }

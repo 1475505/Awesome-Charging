@@ -1,0 +1,5 @@
+## 实际上订阅的是username！！只是测试时方便,car和username注册同名。
+WEBSOCKET localhost:6480/ws/{{car}}
+
+###
+WEBSOCKET localhost:6480/ws/test5

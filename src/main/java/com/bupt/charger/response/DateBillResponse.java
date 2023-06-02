@@ -3,6 +3,9 @@ package com.bupt.charger.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author ll （ created: 2023-05-27 21:32 )
  */
@@ -18,23 +21,22 @@ public class DateBillResponse {
     private long orderId;
 
     @JsonProperty("bill_id")
-    private String billId; // ","分割
+    public List<Long> billId = new ArrayList<>();
 
     @JsonProperty("pile_id")
-    private String pileId;
+    public List<String> pileId = new ArrayList<>();
 
     @JsonProperty("charge_amount")
     private double chargeAmount;
 
     @JsonProperty("charge_duration")
-    private long chargeDuration;
+    public Long chargeDuration;
 
-    //TODO： 都按天了，这是啥？忽略先
     @JsonProperty("start_time")
-    private long startTime;
+    public List<Long> startTime = new ArrayList<>();
 
     @JsonProperty("end_time")
-    private long endTime;
+    public List<Long> endTime = new ArrayList<>();
 
     @JsonProperty("total_charge_fee")
     private double chargeFee;
