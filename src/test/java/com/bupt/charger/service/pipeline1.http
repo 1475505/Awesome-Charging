@@ -1,0 +1,25 @@
+### init
+GET localhost:6480/user/checkStatus?car_id=klee
+
+> {% client.global.set("car", "test4"); %}
+
+### signup
+POST http://localhost:6480/signup
+Content-Type: application/json
+
+{
+  "username": "{{car}}",
+  "password": "{{car}}",
+  "car_id": "{{car}}"
+}
+
+
+### request charge
+POST http://localhost:6480/user/request
+Content-Type: application/json
+
+{
+  "car_id": "{{car}}",
+  "request_amount": 4.38,
+  "request_mode": "slow"
+}

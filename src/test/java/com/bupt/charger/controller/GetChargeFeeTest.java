@@ -34,6 +34,9 @@ public class GetChargeFeeTest {
     @Mock
     private TaskScheduler taskScheduler;
 
+    @Mock
+    private Pile pile;
+
     @BeforeEach
     public void setUp() {
         doReturn(scheduledFuture).when(taskScheduler).schedule(any(Runnable.class), any(Instant.class));
