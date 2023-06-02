@@ -83,26 +83,12 @@ public class ScheduleService {
     public List<Pile> getChargingNotFullQueue(Pile.Mode mode) {
         // 根据模式检测相应充电区的充电队列是否有空余，有则添加
         List<Pile> res = new ArrayList<>();
-        String prefixId = "";
-        int pileSum = 0;
-        if (mode == Pile.Mode.F) {
-            prefixId = "CF";
-            // TODO: 读取配置文件获取快充个数
-            pileSum = 2;
-        } else if (mode == Pile.Mode.T) {
-            prefixId = "CT";
-            // TODO: 读取配置文件获取快充个数
-            pileSum = 3;
-        } else {
-            log.info("充电类型错误");
-            return null;
-        }
 
+        // 只匹配相应充电模式即可
         List<Pile> piles = pilesRepository.findAll();
         for (Pile pile : piles) {
-            // TODO：没有过滤充电桩的充电模式是否匹配！！
             //    如果没有达到容量就是有空余
-            if (pile.getQCnt() < pile.getCapacity()) {
+            if (pile.getMode().equals(mode) && pile.getQCnt() < pile.getCapacity()) {
                 res.add(pile);
             }
         }
@@ -148,9 +134,9 @@ public class ScheduleService {
     // 将指定车辆从等候区移除
     public void removeFromWaitingQueue(String carId, ChargeRequest.RequestMode oldMode) {
         String oldQueueId;
-        if (oldMode == ChargeRequest.RequestMode.FAST) {
+        if (oldMode.equals(ChargeRequest.RequestMode.FAST)) {
             oldQueueId = "F";
-        } else if (oldMode == ChargeRequest.RequestMode.SLOW) {
+        } else if (oldMode.equals(ChargeRequest.RequestMode.SLOW)) {
             oldQueueId = "T";
         } else {
             log.info("移除等候区错误");
@@ -163,10 +149,13 @@ public class ScheduleService {
 
     // 基本调度策略
     public String basicSchedule(List<Pile> piles, Pile.Mode mode) {
+        if (piles == null || piles.size() == 0) {
+            return null;
+        }
         String suffixId;
-        if (mode == Pile.Mode.T) {
+        if (mode.equals(Pile.Mode.T)) {
             suffixId = "T";
-        } else if (mode == Pile.Mode.F) {
+        } else if (mode.equals(Pile.Mode.F)) {
             suffixId = "F";
         } else {
             log.info("调度策略错误");
@@ -185,7 +174,7 @@ public class ScheduleService {
 
         // 从等待区移走
         String topCarId = waitQueue.consumeWaitingCar();
-        if (topCarId != null && topCarId.equals("")) {
+        if (topCarId != null && topCarId.length() > 0) {
             Car car = carRepository.findByCarId(topCarId);
             // 执行调度策略
             // 无论是故障调度还是基本调度都是从一个等候队列到一个充电队列,选择时间最短的充电队列
@@ -222,6 +211,7 @@ public class ScheduleService {
                 for (int i = 0; i < leftTimeList.size(); i++) {
                     if (leftTimeList.get(i).compareTo(minDuration) < 0) {
                         minIndex = i;
+                        minDuration = leftTimeList.get(i);
                     }
                 }
                 resPile = piles.get(minIndex);

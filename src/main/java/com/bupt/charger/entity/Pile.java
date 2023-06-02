@@ -54,6 +54,7 @@ public class Pile {
     private int totalCapacity = 0;
 
     public Mode mode; // 这是个快充还是慢充桩
+
     public enum Mode {
         F, // 快充
         T // 这个叫慢充，不知道是哪个单词，反正是慢充。对应文档
@@ -98,7 +99,7 @@ public class Pile {
         } else {
             carQueue += "," + id;
         }
-        return false;
+        return true;
     }
 
     public String consumeWaitingCar() {

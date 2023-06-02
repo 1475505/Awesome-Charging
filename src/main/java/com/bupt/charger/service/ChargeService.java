@@ -110,6 +110,7 @@ public class ChargeService {
         ChargingQueue f = chargingQueueRepository.findByQueueId("F");
         ChargingQueue t = chargingQueueRepository.findByQueueId("T");
         int nowWaitingNum = f.getWaitingCarCnt() + t.getWaitingCarCnt();
+        System.out.println("nowWaitingNum: " + nowWaitingNum);
         return nowWaitingNum >= maxWaitingNum;
     }
 

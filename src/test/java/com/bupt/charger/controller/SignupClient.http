@@ -3,9 +3,9 @@ POST http://localhost:6480/signup
 Content-Type: application/json
 
 {
-  "username": "xdd",
-  "password": "xdd",
-  "car_id": "dicks"
+  "username": "hjytest",
+  "password": "hjytest",
+  "car_id": "hjycar"
 }
 
 

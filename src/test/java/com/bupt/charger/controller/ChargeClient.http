@@ -3,8 +3,8 @@ POST http://localhost:6480/user/request
 Content-Type: application/json
 
 {
-  "car_id": "dicks",
-  "request_amount": 4.38,
+  "car_id": "hjycar",
+  "request_amount": 9.48,
   "request_mode": "slow"
 }
 
