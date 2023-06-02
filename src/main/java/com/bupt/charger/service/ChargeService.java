@@ -263,6 +263,7 @@ public class ChargeService {
                 return;
             }
             car.releaseChargingProcess();
+            carRepository.save(car);
             // 叫号队列中下一辆车开始充电
             scheduleService.remindCarStartCharge(pile.getPileId());
 
