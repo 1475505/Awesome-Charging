@@ -1,0 +1,5 @@
+### 10. 按天获取账单（以开始时间为准）
+GET http://localhost:6480/user/checkBill?car_id=test8
+
+### 11. 获取详单
+GET http://localhost:6480/user/getBill?bill_id=5

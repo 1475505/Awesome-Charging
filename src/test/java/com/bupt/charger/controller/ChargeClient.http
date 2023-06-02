@@ -31,7 +31,7 @@ POST http://localhost:6480/user/startCharging
 Content-Type: application/json
 
 {
-  "car_id": "{{car}}"
+  "car_id": "test7"
 }
 
 ### 结束充电
@@ -39,5 +39,7 @@ POST http://localhost:6480/user/stopCharging
 Content-Type: application/json
 
 {
-  "car_id": "{{car}}"
+  "car_id": "test7"
 }
+
+
