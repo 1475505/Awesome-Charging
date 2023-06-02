@@ -1,7 +1,7 @@
 ### init
 GET localhost:6480/user/checkStatus?car_id=klee
 
-> {% client.global.set("car", "test4"); %}
+> {% client.global.set("car", "test5"); %}
 
 ### signup
 POST http://localhost:6480/signup
@@ -22,4 +22,21 @@ Content-Type: application/json
   "car_id": "{{car}}",
   "request_amount": 4.38,
   "request_mode": "slow"
+}
+
+
+### 开始充电
+POST http://localhost:6480/user/startCharging
+Content-Type: application/json
+
+{
+  "car_id": "{{car}}"
+}
+
+### 结束充电
+POST http://localhost:6480/user/stopCharging
+Content-Type: application/json
+
+{
+  "car_id": "{{car}}"
 }
