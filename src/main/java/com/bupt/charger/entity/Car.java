@@ -3,6 +3,8 @@ package com.bupt.charger.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 /**
  * @author ll （ created: 2023-05-27 17:26 )
  */
@@ -62,6 +64,9 @@ public class Car {
         OTHER  //3
     }
 
+    // note: 车辆进入等候区的时间，用于时间调度排序
+    private LocalDateTime enWaitingQTime;
+
     /**
      * -1表示没有正在处理的请求。
      */
@@ -85,5 +90,6 @@ public class Car {
         this.setQueue(Car.Queue.UNQUEUED);
         this.setQueueNo("");
         this.setHandingReqId(-1);
+        this.setEnWaitingQTime(null);
     }
 }
