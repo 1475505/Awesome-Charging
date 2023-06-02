@@ -120,6 +120,19 @@ public class Pile {
         }
     }
 
+    public boolean removeCar(String carId) {
+        var input = carQueue;
+        int index = getQueueIdx(carId);
+        if (index != -1) {
+            List<String> qList = getQList();
+            qList.remove(index - 1);
+            // 赋值回carQueue
+            carQueue = String.join(",", qList);
+            return true;
+        }
+        return false;
+    }
+
     // return -1 means NOTFOUND
     public int getQueueIdx(String carId) {
         List<String> queueCars = getQList();
