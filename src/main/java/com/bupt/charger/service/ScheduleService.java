@@ -281,6 +281,12 @@ public class ScheduleService {
         int len = pile.getQCnt();
         for (int i = 0; i < len; i++) {
             String carId = pile.consumeWaitingCar();
+            // 移到故障队列里面的车辆状态还是认为处于充电区域，等待充电
+            Car tmpCar = carRepository.findByCarId(carId);
+            tmpCar.setStatus(Car.Status.waiting);
+            tmpCar.setQueueNo(errorQueue.getQueueId());
+            tmpCar.setArea(Car.Area.CHARGING);
+            carRepository.save(tmpCar);
             errorQueue.addWaitingCar(carId);
         }
         //    保存数据库
@@ -361,9 +367,16 @@ public class ScheduleService {
         for (Car car : cars) {
             errorQueue.addWaitingCar(car.getCarId());
         }
+
+        // 更改车辆状态
+        for (Car tmpCar : cars) {
+            tmpCar.setStatus(Car.Status.waiting);
+            tmpCar.setQueueNo(errorQueue.getQueueId());
+            tmpCar.setArea(Car.Area.CHARGING);
+            carRepository.save(tmpCar);
+        }
         //    保存
         chargingQueueRepository.save(errorQueue);
-
     }
 
 }

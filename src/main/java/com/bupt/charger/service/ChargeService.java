@@ -309,7 +309,7 @@ public class ChargeService {
     }
 
 
-    // TODO: 这个是故障机制中，管理员需要调用的停止充电
+    // 这个是故障机制中，管理员需要调用的停止充电
     public void errorStopCharging(String carId) {
         //    停止充电，但是不能更改Car的进入等候区的状态
 
@@ -356,7 +356,22 @@ public class ChargeService {
         double chargeFee = calculator.getChargeFee(startTime, endTime, pileNo, amount);
         bill.setChargeFee(chargeFee);
         bill.setServiceFee(amount * pile.getServePrice());
+        // 保存
+        billRepository.save(bill);
+        chargeReqRepository.save(request);
 
-        // TODO: 完成之后，需要为该车重建一个请求，传入没有充的电量
+        // 不需要设置车辆状态，因为之后进入调度队列自动设置
+
+        // 需要为该车重建一个请求，传入没有充的电量
+        ChargeRequest newChargeRequest = new ChargeRequest();
+        newChargeRequest.setRequestAmount(request.getRequestAmount() - amount);
+        newChargeRequest.setRequestMode(request.getRequestMode());
+        newChargeRequest.setStatus(ChargeRequest.Status.DOING);
+        newChargeRequest.setCarId(carId);
+        //    保存
+        chargeReqRepository.save(newChargeRequest);
+
+        car.setHandingReqId(newChargeRequest.getId());
+        carRepository.save(car);
     }
 }
