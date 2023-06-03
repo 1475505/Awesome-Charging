@@ -36,8 +36,8 @@ public class ScheduleService {
     @Autowired
     private PilesRepository pilesRepository;
 
-    @Autowired
-    private ChargeService chargeService;
+//    @Autowired
+//    private ChargeService chargeService;
 
     @Autowired
     private Estimator estimator;
@@ -269,7 +269,7 @@ public class ScheduleService {
         // 调用故障停止充电函数，将第一个正在充电的车停止充电
         Car topCar = carRepository.findByCarId(pile.getQList().get(0));
         if (topCar.getStatus().equals(Car.Status.charging)) {
-            chargeService.errorStopCharging(topCar.getCarId());
+            //chargeService.errorStopCharging(topCar.getCarId());
         }
         // 选择指定模式的故障队列
         ChargingQueue errorQueue;
@@ -303,7 +303,7 @@ public class ScheduleService {
         // 调用故障停止充电函数，将第一个正在充电的车停止充电
         Car topCar = carRepository.findByCarId(pile.getQList().get(0));
         if (topCar.getStatus().equals(Car.Status.charging)) {
-            chargeService.errorStopCharging(topCar.getCarId());
+            //chargeService.errorStopCharging(topCar.getCarId());
         }
         // 选择指定模式的故障队列
         ChargingQueue errorQueue;

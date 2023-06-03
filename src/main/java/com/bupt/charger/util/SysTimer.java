@@ -1,9 +1,12 @@
 package com.bupt.charger.util;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Date;
 import java.util.Calendar;
 import java.util.Timer;
 
+@Component
 public class SysTimer {
     private static Date startTime;
     private Timer timer;
