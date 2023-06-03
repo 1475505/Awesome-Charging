@@ -225,4 +225,22 @@ public class AdminService {
         return response;
     }
 
+
+    public void diePile(DiePileRequest diePileRequest) throws ApiException {
+        log.info("Admin try to die pile: " + diePileRequest.getPileId());
+        var pileId = diePileRequest.getPileId();
+        Pile pile = pilesRepository.findByPileId(pileId);
+        if (pile == null) {
+            throw new ApiException("不存在这个充电桩！");
+        }
+
+        pile.setStatus(Pile.Status.ERROR);
+        pilesRepository.save(pile);
+
+        //TODO:唤起后续调度
+
+
+
+    }
+
 }
