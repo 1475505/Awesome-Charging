@@ -8,5 +8,5 @@ import java.util.List;
 
 @Data
 public class AllBillsResponse extends Resp {
-    List<DateBillResponse> bills = new ArrayList<>();
+    List<BillResponse> bills = new ArrayList<>();
 }

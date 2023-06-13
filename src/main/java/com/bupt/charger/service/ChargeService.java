@@ -272,10 +272,6 @@ public class ChargeService {
         LocalDateTime startTime = request.getStartChargingTime();
         double amount = carService.updateDoneAmount(carId);
 
-        request.setEndChargingTime(endTime);
-        request.setStatus(ChargeRequest.Status.DONE);
-        chargeReqRepository.save(request);
-
         // 生成详单
         Bill bill = new Bill();
         bill.setCarId(carId);
@@ -286,8 +282,12 @@ public class ChargeService {
         double chargeFee = calculator.getChargeFee(startTime, endTime, pileNo, amount);
         bill.setChargeFee(chargeFee);
         bill.setServiceFee(amount * pile.getServePrice());
-
         billRepository.save(bill);
+
+        request.setEndChargingTime(endTime);
+        request.setStatus(ChargeRequest.Status.DONE);
+        request.setBillId(bill.getId());
+        chargeReqRepository.save(request);
 
         // 释放车的充电状态
         car.releaseChargingProcess();

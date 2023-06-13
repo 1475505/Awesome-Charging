@@ -23,4 +23,6 @@ public interface ChargeReqRepository extends JpaRepository<ChargeRequest, Long> 
     default ChargeRequest getLatestDoneRequests(String carId) {
         return this.findTopByCarIdAndStatusOrderByCreatedAtDesc(carId, ChargeRequest.Status.DONE);
     }
+
+    List<ChargeRequest> findAllByCarIdOrderById(String carId);
 }

@@ -1,20 +1,21 @@
 package com.bupt.charger.service;
 
 import com.bupt.charger.entity.Bill;
+import com.bupt.charger.entity.ChargeRequest;
 import com.bupt.charger.exception.ApiException;
 import com.bupt.charger.repository.BillRepository;
-import com.bupt.charger.response.AllBillsResponse;
-import com.bupt.charger.response.BillResponse;
-import com.bupt.charger.response.DateBillResponse;
+import com.bupt.charger.repository.ChargeReqRepository;
+import com.bupt.charger.response.*;
 import com.bupt.charger.util.FormatUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.Format;
 import java.time.*;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author ll （ created: 2023-05-27 21:20 )
@@ -25,8 +26,11 @@ public class BillService {
     @Autowired
     BillRepository billRepository;
 
-    public BillResponse getBill(long billId) {
-        BillResponse response = new BillResponse();
+    @Autowired
+    ChargeReqRepository chargeReqRepository;
+
+    public DetailedBillResponse getBill(long billId) {
+        DetailedBillResponse response = new DetailedBillResponse();
         Bill bill = billRepository.findBillById(billId);
         if (bill == null) {
             throw new ApiException("未找到此详单");
@@ -47,8 +51,57 @@ public class BillService {
     }
 
     public AllBillsResponse checkBill(String carId) {
-        List<Bill> bills = billRepository.findAllByCarIdOrderByStartTime(carId);
         AllBillsResponse response = new AllBillsResponse();
+        Set<Long> recoveredRequests = new TreeSet<>();
+        List<ChargeRequest> chargeRequests = chargeReqRepository.findAllByCarIdOrderById(carId);
+
+        for (ChargeRequest req : chargeRequests) {
+            if (recoveredRequests.contains(req.getId()))    continue;
+            if (req.getStatus() != ChargeRequest.Status.DONE) continue;
+            BillResponse billResponse = new BillResponse();
+            ChargeRequest curReq = req;
+            Optional<Bill> billOptional = billRepository.findById(curReq.getId());
+            Bill bill = billOptional.get();
+            billResponse.billId.add(bill.getId());
+            billResponse.pileId.add(bill.getPileId());
+            billResponse.setDate(bill.getStartTime().toLocalDate().toString());
+            billResponse.setCarId(carId);
+            billResponse.setStartTime(FormatUtils.LocalDateTime2Long(bill.getStartTime()));
+            double chargeAmount = bill.getChargeAmount();
+            long chargeDuration = bill.getChargeDuration();
+            double chargeFee = bill.getChargeFee();
+            double serviceFee = bill.getServiceFee();
+            LocalDateTime endTime = bill.getEndTime();
+            while (curReq.isSuffered()) {
+                Long succReq = req.getSuccReqsList().get(0);
+                Optional<ChargeRequest> succReqOptional = chargeReqRepository.findById(succReq);
+                curReq = succReqOptional.get();
+                recoveredRequests.add(curReq.getId());
+                billOptional = billRepository.findById(curReq.getId());
+                bill = billOptional.get();
+                billResponse.billId.add(bill.getId());
+                billResponse.pileId.add(bill.getPileId());
+
+                chargeAmount += bill.getChargeAmount();
+                chargeDuration += bill.getChargeDuration();
+                chargeFee += bill.getChargeFee();
+                serviceFee += bill.getServiceFee();
+                endTime = bill.getEndTime();
+            }
+            billResponse.setEndTime(FormatUtils.LocalDateTime2Long(endTime));
+            billResponse.setChargeAmount(chargeAmount);
+            billResponse.setChargeDuration(chargeDuration);
+            billResponse.setChargeFee(chargeFee);
+            billResponse.setServiceFee(serviceFee);
+            billResponse.setTotalFee(chargeFee + serviceFee);
+            response.getBills().add(billResponse);
+        }
+        return response;
+    }
+
+    public AllBillsByDayResponse checkBillByDay(String carId) {
+        List<Bill> bills = billRepository.findAllByCarIdOrderByStartTime(carId);
+        AllBillsByDayResponse response = new AllBillsByDayResponse();
         LocalDate walkedDate = null; // 上一次遍历的bill的日期
         DateBillResponse dateBillResponse = null;
         double chargeAmount = 0;

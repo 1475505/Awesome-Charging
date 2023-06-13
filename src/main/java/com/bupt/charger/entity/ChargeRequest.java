@@ -67,7 +67,11 @@ public class ChargeRequest {
             this.setRequestMode(RequestMode.UNSET);
         }
     }
-    private String succReqs;
+    private String succReqs; //目前的设计，只存储一次。
+
+    public boolean isSuffered() {
+        return !succReqs.isEmpty();
+    }
 
     public List<Long> getSuccReqsList() {
         String input = succReqs;
@@ -100,4 +104,6 @@ public class ChargeRequest {
 
     private LocalDateTime startChargingTime;
     private LocalDateTime endChargingTime;
+
+    private Long billId;
 }
