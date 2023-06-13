@@ -11,15 +11,12 @@ import com.bupt.charger.response.ChargeReqResponse;
 import com.bupt.charger.util.Calculator;
 import com.bupt.charger.util.Estimator;
 import com.bupt.charger.util.FormatUtils;
-import com.bupt.charger.util.SysTimer;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 
 import static java.lang.Math.min;
 
@@ -236,8 +233,7 @@ public class ChargeService {
             throw new ApiException("没有关联的充电请求，请联系客服");
         }
 
-        Date now = SysTimer.getStartTime();
-        LocalDateTime endTime = now.toInstant().atZone(ZoneId.of("+8")).toLocalDateTime();
+        LocalDateTime endTime = FormatUtils.getNowLocalDateTime();
 
         taskService.cancelTask(carId);
 
@@ -257,14 +253,22 @@ public class ChargeService {
         String pileNo = car.getPileId();
         Pile pile = pilesRepository.findByPileId(pileNo);
 
-        // TODO：车辆在充电区等候时取消充电，加宇移除相关队列
+        // 车辆在充电区等候时取消充电，加宇移除相关队列
         if (car.getArea() == Car.Area.CHARGING && car.getStatus() != Car.Status.charging) {
             request.setStatus(ChargeRequest.Status.CANCELED);
             chargeReqRepository.save(request);
-            car.releaseChargingProcess();
-            if (pile.getQueueIdx(carId) == 1) {
-                // TODO：这个状态是被提醒了的状态，停止等同于让出空位，需要调度后续车辆！！！
+            // 移除从充电区队列删除
+            if (!pile.removeCar(carId)) {
+                log.info("出现删除故障");
+                return;
             }
+            car.releaseChargingProcess();
+            carRepository.save(car);
+            // 叫号队列中下一辆车开始充电
+            scheduleService.remindCarStartCharge(pile.getPileId());
+
+            // 结束充电后调用调度函数，将等候区的车辆移到充电区
+            scheduleService.moveToChargingQueue();
             return;
         }
 
@@ -306,8 +310,69 @@ public class ChargeService {
     }
 
 
-    // TODO: 这个是故障机制中，管理员需要调用的停止充电
+    // 这个是故障机制中，管理员需要调用的停止充电
     public void errorStopCharging(String carId) {
+        //    停止充电，但是不能更改Car的进入等候区的状态
 
+        Car car = carRepository.findByCarId(carId);
+        if (car == null) {
+            throw new ApiException("车辆不存在");
+        }
+
+        if (!car.inChargingProcess()) {
+            throw new ApiException("车辆并未在充电进程中");
+        }
+
+        var requestOptionalal = chargeReqRepository.findById(car.getHandingReqId());
+        if (requestOptionalal.isEmpty()) {
+            throw new ApiException("没有关联的充电请求，请联系客服");
+        }
+
+        LocalDateTime endTime = FormatUtils.getNowLocalDateTime();
+
+        taskService.cancelTask(carId);
+
+        // 标记充电请求为已完成
+        ChargeRequest request = requestOptionalal.get();
+
+        String pileNo = car.getPileId();
+        Pile pile = pilesRepository.findByPileId(pileNo);
+
+        request.setEndChargingTime(endTime);
+        request.setStatus(ChargeRequest.Status.DONE);
+
+        //计算实际充电量
+        LocalDateTime startTime = request.getStartChargingTime();
+        double amount = calculator.getChargeAmount(startTime, endTime, request.getRequestMode());
+        amount = min(amount, request.getRequestAmount());
+        request.setDoneAmount(amount);
+
+        // 生成详单
+        Bill bill = new Bill();
+        bill.setCarId(carId);
+        bill.setStartTime(startTime);
+        bill.setEndTime(endTime);
+        bill.setPileId(pileNo);
+        bill.setChargeAmount(amount);
+        double chargeFee = calculator.getChargeFee(startTime, endTime, pileNo, amount);
+        bill.setChargeFee(chargeFee);
+        bill.setServiceFee(amount * pile.getServePrice());
+        // 保存
+        billRepository.save(bill);
+        chargeReqRepository.save(request);
+
+        // 不需要设置车辆状态，因为之后进入调度队列自动设置
+
+        // 需要为该车重建一个请求，传入没有充的电量
+        ChargeRequest newChargeRequest = new ChargeRequest();
+        newChargeRequest.setRequestAmount(request.getRequestAmount() - amount);
+        newChargeRequest.setRequestMode(request.getRequestMode());
+        newChargeRequest.setStatus(ChargeRequest.Status.DOING);
+        newChargeRequest.setCarId(carId);
+        //    保存
+        chargeReqRepository.save(newChargeRequest);
+
+        car.setHandingReqId(newChargeRequest.getId());
+        carRepository.save(car);
     }
 }

@@ -1,24 +1,24 @@
 package com.bupt.charger.service;
 
-import com.bupt.charger.controller.AdminPileController;
-import com.bupt.charger.entity.*;
+import com.bupt.charger.entity.Admin;
+import com.bupt.charger.entity.Car;
+import com.bupt.charger.entity.Pile;
+import com.bupt.charger.exception.ApiException;
+import com.bupt.charger.repository.AdminRepository;
 import com.bupt.charger.repository.CarRepository;
 import com.bupt.charger.repository.PilesRepository;
 import com.bupt.charger.request.*;
-import com.bupt.charger.response.*;
-import com.bupt.charger.exception.ApiException;
-import com.bupt.charger.repository.AdminRepository;
-import io.swagger.annotations.Api;
+import com.bupt.charger.response.AdminLoginResponse;
+import com.bupt.charger.response.CheckChargerQueueResponse;
+import com.bupt.charger.response.CheckChargerResponse;
+import com.bupt.charger.response.InitDataBaseResponse;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
-import java.time.Duration;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -223,6 +223,24 @@ public class AdminService {
         response.setDbResp("initial ok");
 
         return response;
+    }
+
+
+    public void diePile(DiePileRequest diePileRequest) throws ApiException {
+        log.info("Admin try to die pile: " + diePileRequest.getPileId());
+        var pileId = diePileRequest.getPileId();
+        Pile pile = pilesRepository.findByPileId(pileId);
+        if (pile == null) {
+            throw new ApiException("不存在这个充电桩！");
+        }
+
+        pile.setStatus(Pile.Status.ERROR);
+        pilesRepository.save(pile);
+
+        //TODO:唤起后续调度
+
+
+
     }
 
 }

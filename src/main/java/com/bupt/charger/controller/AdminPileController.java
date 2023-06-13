@@ -75,4 +75,15 @@ public class AdminPileController {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
         }
     }
+
+    @PostMapping("/diePile")
+    @Operation(summary = "使充电桩故障")
+    public ResponseEntity<Object> diePile(@RequestBody DiePileRequest request) {
+        try {
+            adminService.diePile(request);
+            return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
+        } catch (Exception e) {
+            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
+        }
+    }
 }

@@ -36,6 +36,8 @@ public class ScheduleService {
     @Autowired
     private PilesRepository pilesRepository;
 
+//    @Autowired
+//    private ChargeService chargeService;
 
     @Autowired
     private Estimator estimator;
@@ -260,13 +262,15 @@ public class ScheduleService {
      */
 //    故障-优先级调度移动队列
     public void priorityErrorMoveQueue(String pileId) {
-        // TODO: 设置充电桩为故障状态
-
         //   优先级调度就是将对应的原充电桩队列转移到相应模式的故障队列
         //    暂停正常移进充电区服务
         isStopWaitArea = true;
         Pile pile = pilesRepository.findByPileId(pileId);
-
+        // 调用故障停止充电函数，将第一个正在充电的车停止充电
+        Car topCar = carRepository.findByCarId(pile.getQList().get(0));
+        if (topCar.getStatus().equals(Car.Status.charging)) {
+            //chargeService.errorStopCharging(topCar.getCarId());
+        }
         // 选择指定模式的故障队列
         ChargingQueue errorQueue;
         if (pile.mode.equals(Pile.Mode.F)) {
@@ -274,10 +278,15 @@ public class ScheduleService {
         } else {
             errorQueue = chargingQueueRepository.findByQueueId("ErrorT");
         }
-
         int len = pile.getQCnt();
         for (int i = 0; i < len; i++) {
             String carId = pile.consumeWaitingCar();
+            // 移到故障队列里面的车辆状态还是认为处于充电区域，等待充电
+            Car tmpCar = carRepository.findByCarId(carId);
+            tmpCar.setStatus(Car.Status.waiting);
+            tmpCar.setQueueNo(errorQueue.getQueueId());
+            tmpCar.setArea(Car.Area.CHARGING);
+            carRepository.save(tmpCar);
             errorQueue.addWaitingCar(carId);
         }
         //    保存数据库
@@ -291,6 +300,11 @@ public class ScheduleService {
         isStopWaitArea = true;
         Pile pile = pilesRepository.findByPileId(pileId);
 
+        // 调用故障停止充电函数，将第一个正在充电的车停止充电
+        Car topCar = carRepository.findByCarId(pile.getQList().get(0));
+        if (topCar.getStatus().equals(Car.Status.charging)) {
+            //chargeService.errorStopCharging(topCar.getCarId());
+        }
         // 选择指定模式的故障队列
         ChargingQueue errorQueue;
         if (pile.mode.equals(Pile.Mode.F)) {
@@ -353,9 +367,16 @@ public class ScheduleService {
         for (Car car : cars) {
             errorQueue.addWaitingCar(car.getCarId());
         }
+
+        // 更改车辆状态
+        for (Car tmpCar : cars) {
+            tmpCar.setStatus(Car.Status.waiting);
+            tmpCar.setQueueNo(errorQueue.getQueueId());
+            tmpCar.setArea(Car.Area.CHARGING);
+            carRepository.save(tmpCar);
+        }
         //    保存
         chargingQueueRepository.save(errorQueue);
-
     }
 
 }
