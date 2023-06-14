@@ -14,7 +14,6 @@ import com.bupt.charger.response.CarStatusResponse;
 import com.bupt.charger.util.Calculator;
 import com.bupt.charger.util.Estimator;
 import com.bupt.charger.util.FormatUtils;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -98,7 +97,7 @@ public class CarService {
             updateDoneAmount(carId);
             resp.setRequestTime(estimator.estimateCarLeftChargeTime(carId).getSeconds());
             resp.setCarNumberBeforePosition(0);
-            resp.setQueueNum(car.getPileId()); //TODO:加宇定义充电桩队列名是不是和充电桩名字一样，否则请写个翻译函数。下同
+            resp.setQueueNum(car.getPileId()); //充电桩队列名是不是和充电桩名字一样
         } else if (car.getStatus() == Car.Status.waiting && car.getArea() == Car.Area.CHARGING) {
             Pile pile = pilesRepository.findByPileId(car.getPileId());
             if (pile == null) {
@@ -108,7 +107,7 @@ public class CarService {
             resp.setCarNumberBeforePosition(idx - 1);
             if (pile.getQueueIdx(carId) == 1) {
                 taskService.scheduleTask(carId, Duration.ZERO, "车辆可以开始充电啦~");
-            } else if (pile.getQCnt() > 1){
+            } else if (pile.getQCnt() > 1) {
                 updateDoneAmount(pile.getQList().get(0));
             }
             resp.setQueueNum(car.getPileId());
@@ -132,7 +131,7 @@ public class CarService {
         long reqId = car.getHandingReqId();
         var requestOptional = chargeReqRepository.findById(reqId);
 
-        if  (requestOptional.isEmpty()) {
+        if (requestOptional.isEmpty()) {
             throw new ApiException("车辆没有正在进行的充电请求");
         }
 

@@ -239,7 +239,7 @@ public class AdminService {
         pile.setStatus(Pile.Status.ERROR);
         pilesRepository.save(pile);
 
-        //TODO:唤起后续调度，管理员前端可以选择使用哪种故障调度，优先级故障还是时间故障
+        //唤起后续调度
 
         //    如果是优先级故障，写下面语句
         //    scheduleService.priorityErrorMoveQueue(pileId);
