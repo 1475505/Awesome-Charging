@@ -1,14 +1,9 @@
 package com.bupt.charger.service;
 
-import com.bupt.charger.entity.Car;
-import com.bupt.charger.entity.ChargeRequest;
-import com.bupt.charger.entity.ChargingQueue;
-import com.bupt.charger.entity.Pile;
+import com.bupt.charger.entity.*;
 import com.bupt.charger.exception.ApiException;
-import com.bupt.charger.repository.CarRepository;
-import com.bupt.charger.repository.ChargeReqRepository;
-import com.bupt.charger.repository.ChargingQueueRepository;
-import com.bupt.charger.repository.PilesRepository;
+import com.bupt.charger.repository.*;
+import com.bupt.charger.util.Calculator;
 import com.bupt.charger.util.Estimator;
 import com.bupt.charger.util.FormatUtils;
 import lombok.extern.java.Log;
@@ -16,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,7 +35,12 @@ public class ScheduleService {
     private Estimator estimator;
 
     @Autowired
-    private ErrorService errorService;
+    TaskService taskService;
+
+    @Autowired
+    Calculator calculator;
+    @Autowired
+    BillRepository billRepository;
     static int fSumNumber = 0;
     static int tSumNumber = 0;
 
@@ -257,6 +258,73 @@ public class ScheduleService {
         return null;
     }
 
+    // 这个是故障机制中，故障充电桩车辆停止充电
+    public void errorStopCharging(String carId) {
+        //    停止充电，但是不能更改Car的进入等候区的状态
+
+        Car car = carRepository.findByCarId(carId);
+        if (car == null) {
+            throw new ApiException("车辆不存在");
+        }
+
+        if (!car.inChargingProcess()) {
+            throw new ApiException("车辆并未在充电进程中");
+        }
+
+        var requestOptionalal = chargeReqRepository.findById(car.getHandingReqId());
+        if (requestOptionalal.isEmpty()) {
+            throw new ApiException("没有关联的充电请求，请联系客服");
+        }
+
+        LocalDateTime endTime = FormatUtils.getNowLocalDateTime();
+
+        taskService.cancelTask(carId);
+
+        // 标记充电请求为已完成
+        ChargeRequest request = requestOptionalal.get();
+
+        String pileNo = car.getPileId();
+        Pile pile = pilesRepository.findByPileId(pileNo);
+
+        request.setEndChargingTime(endTime);
+        request.setStatus(ChargeRequest.Status.DONE);
+
+        //计算实际充电量
+        LocalDateTime startTime = request.getStartChargingTime();
+        double amount = calculator.getChargeAmount(startTime, endTime, request.getRequestMode());
+        amount = Double.min(amount, request.getRequestAmount());
+        request.setDoneAmount(amount);
+
+        // 生成详单
+        Bill bill = new Bill();
+        bill.setCarId(carId);
+        bill.setStartTime(startTime);
+        bill.setEndTime(endTime);
+        bill.setPileId(pileNo);
+        bill.setChargeAmount(amount);
+        double chargeFee = calculator.getChargeFee(startTime, endTime, pileNo, amount);
+        bill.setChargeFee(chargeFee);
+        bill.setServiceFee(amount * pile.getServePrice());
+        // 保存
+        billRepository.save(bill);
+        chargeReqRepository.save(request);
+
+        // 不需要设置车辆状态，因为之后进入调度队列自动设置
+
+        // 需要为该车重建一个请求，传入没有充的电量
+        ChargeRequest newChargeRequest = new ChargeRequest();
+        newChargeRequest.setRequestAmount(request.getRequestAmount() - amount);
+        newChargeRequest.setRequestMode(request.getRequestMode());
+        newChargeRequest.setStatus(ChargeRequest.Status.DOING);
+        newChargeRequest.setCarId(carId);
+        //    保存
+        chargeReqRepository.save(newChargeRequest);
+
+        car.setHandingReqId(newChargeRequest.getId());
+        carRepository.save(car);
+    }
+
+
     /*  获取故障上报请求,也可管理员端直接进行,暂停正在充电的车辆,同时转移队列到故障队列
         注意一个问题: 优先级调度就是将对应的原充电桩队列转移到相应模式的故障队列,但是时间顺序队列需要将同类型的所有没在充电的车辆全部汇集到故障队列里面,同时需要按照车辆排队号码进行排序,数字越大越靠后.汇聚之后将原来的队列清空,因为我们有实时检测是否有队列空的,自然就会从故障队列里面加回去
      */
@@ -264,12 +332,12 @@ public class ScheduleService {
     public void priorityErrorMoveQueue(String pileId) {
         //   优先级调度就是将对应的原充电桩队列转移到相应模式的故障队列
         //    暂停正常移进充电区服务
-        isStopWaitArea = true;
+        ScheduleService.isStopWaitArea = true;
         Pile pile = pilesRepository.findByPileId(pileId);
         // 调用故障停止充电函数，将第一个正在充电的车停止充电
         Car topCar = carRepository.findByCarId(pile.getQList().get(0));
         if (topCar.getStatus().equals(Car.Status.charging)) {
-            errorService.errorStopCharging(topCar.getCarId());
+            errorStopCharging(topCar.getCarId());
         }
         // 选择指定模式的故障队列
         ChargingQueue errorQueue;
@@ -300,13 +368,13 @@ public class ScheduleService {
 
     //    故障-时间顺序调度移动队列
     public void timeErrorMoveQueue(String pileId) {
-        isStopWaitArea = true;
+        ScheduleService.isStopWaitArea = true;
         Pile pile = pilesRepository.findByPileId(pileId);
 
         // 调用故障停止充电函数，将第一个正在充电的车停止充电
         Car topCar = carRepository.findByCarId(pile.getQList().get(0));
         if (topCar.getStatus().equals(Car.Status.charging)) {
-            errorService.errorStopCharging(topCar.getCarId());
+            errorStopCharging(topCar.getCarId());
         }
         // 选择指定模式的故障队列
         ChargingQueue errorQueue;
@@ -387,5 +455,4 @@ public class ScheduleService {
             cars.add(carRepository.findByCarId(carId));
         }
     }
-
 }
