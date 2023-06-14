@@ -30,6 +30,9 @@ public class AdminService {
     @Autowired
     private AdminRepository adminRepository;
 
+    @Autowired
+    private ScheduleService scheduleService;
+
     public AdminLoginResponse login(String adminName, String password) throws LoginException {
         log.info("Admin try to login: " + adminName);
         Admin admin = adminRepository.findByAdminNameAndPassword(adminName, password);
@@ -162,6 +165,7 @@ public class AdminService {
 
     /**
      * 管理员初始化数据库
+     *
      * @return null
      */
     @Autowired
@@ -191,8 +195,6 @@ public class AdminService {
          * 等候区最大容量：6
          * 充电桩命名：f1，f2，t1，t2，t3
          */
-
-
 
 
 //        tableName="bills";
@@ -237,10 +239,13 @@ public class AdminService {
         pile.setStatus(Pile.Status.ERROR);
         pilesRepository.save(pile);
 
-        //TODO:唤起后续调度
+        //TODO:唤起后续调度，管理员前端可以选择使用哪种故障调度，优先级故障还是时间故障
 
+        //    如果是优先级故障，写下面语句
+        //    scheduleService.priorityErrorMoveQueue(pileId);
 
-
+        //    如果是时间故障，写
+        // scheduleService.timeErrorMoveQueue(pileId);
     }
 
 }

@@ -24,7 +24,6 @@ import java.util.List;
 @Log
 public class ScheduleService {
     // note: 将所有充电区的队列放在pile的queue里面，等候区的才放在ChargingQueue里面
-    // TODO: 考虑充电桩状态，必须是活动状态才可被查询到
     @Autowired
     private CarRepository carRepository;
     @Autowired
@@ -36,11 +35,11 @@ public class ScheduleService {
     @Autowired
     private PilesRepository pilesRepository;
 
-//    @Autowired
-//    private ChargeService chargeService;
-
     @Autowired
     private Estimator estimator;
+
+    @Autowired
+    private ErrorService errorService;
     static int fSumNumber = 0;
     static int tSumNumber = 0;
 
@@ -94,7 +93,8 @@ public class ScheduleService {
         List<Pile> piles = pilesRepository.findAll();
         for (Pile pile : piles) {
             //    如果没有达到容量就是有空余
-            if (pile.getMode().equals(mode) && pile.getQCnt() < pile.getCapacity()) {
+            // 充电桩必须是正常运行的
+            if (pile.isON() && pile.getMode().equals(mode) && pile.getQCnt() < pile.getCapacity()) {
                 res.add(pile);
             }
         }
@@ -103,7 +103,7 @@ public class ScheduleService {
 
     // 提醒车辆开始充电函数
     public boolean remindCarStartCharge(String pileId) {
-        // TODO: 调用这个函数的情况：1. 空队列进来了新车(即最短时间调度函数检测到这个事件) 2. 有车辆结束充电，通知下一个。
+        // 调用这个函数的情况：1. 空队列进来了新车(即最短时间调度函数检测到这个事件) 2. 有车辆结束充电，通知下一个。
 
         //     如果队列里面没有车辆，那么就不需要提醒；不然提醒指定队列的第一辆车开始充电
         Pile pile = pilesRepository.findByPileId(pileId);
@@ -119,7 +119,7 @@ public class ScheduleService {
 
     // 进入充电区
     public void moveToChargingQueue() {
-        // TODO: 以下情况会调用这个函数：1. 有车辆发送结束充电请求 2. 刚进入等候区（因为这个时候可能有多个充电队列空余） 3. 提交故障请求时，因为可能其他多个充电队列空余，但故障仅发生在有车充电的充电桩里面了(TODO) 4. 充电桩故障完恢复上线时(暂时没有处理,TODO)
+        //  以下情况会调用这个函数：1. 有车辆发送结束充电请求 2. 刚进入等候区（因为这个时候可能有多个充电队列空余） 3. 提交故障请求时，因为可能其他多个充电队列空余，但故障仅发生在有车充电的充电桩里面了(TODO) 4. 充电桩故障完恢复上线时(暂时没有处理,TODO)
 
         // 获取两个模式下的空余队列
         List<Pile> fastPiles = getChargingNotFullQueue(Pile.Mode.F);
@@ -257,7 +257,7 @@ public class ScheduleService {
         return null;
     }
 
-    /*  TODO: 获取故障上报请求,也可管理员端直接进行,暂停正在充电的车辆,同时转移队列到故障队列
+    /*  获取故障上报请求,也可管理员端直接进行,暂停正在充电的车辆,同时转移队列到故障队列
         注意一个问题: 优先级调度就是将对应的原充电桩队列转移到相应模式的故障队列,但是时间顺序队列需要将同类型的所有没在充电的车辆全部汇集到故障队列里面,同时需要按照车辆排队号码进行排序,数字越大越靠后.汇聚之后将原来的队列清空,因为我们有实时检测是否有队列空的,自然就会从故障队列里面加回去
      */
 //    故障-优先级调度移动队列
@@ -269,7 +269,7 @@ public class ScheduleService {
         // 调用故障停止充电函数，将第一个正在充电的车停止充电
         Car topCar = carRepository.findByCarId(pile.getQList().get(0));
         if (topCar.getStatus().equals(Car.Status.charging)) {
-            //chargeService.errorStopCharging(topCar.getCarId());
+            errorService.errorStopCharging(topCar.getCarId());
         }
         // 选择指定模式的故障队列
         ChargingQueue errorQueue;
@@ -292,7 +292,10 @@ public class ScheduleService {
         //    保存数据库
         pilesRepository.save(pile);
         chargingQueueRepository.save(errorQueue);
-
+        //    调度移到充电桩,因为可能有多个空余，宁可多调用几次，所以有几个车辆在故障队列就调用几次检测
+        for (int i = 0; i < errorQueue.getWaitingCarCnt(); i++) {
+            moveToChargingQueue();
+        }
     }
 
     //    故障-时间顺序调度移动队列
@@ -303,7 +306,7 @@ public class ScheduleService {
         // 调用故障停止充电函数，将第一个正在充电的车停止充电
         Car topCar = carRepository.findByCarId(pile.getQList().get(0));
         if (topCar.getStatus().equals(Car.Status.charging)) {
-            //chargeService.errorStopCharging(topCar.getCarId());
+            errorService.errorStopCharging(topCar.getCarId());
         }
         // 选择指定模式的故障队列
         ChargingQueue errorQueue;
@@ -377,6 +380,12 @@ public class ScheduleService {
         }
         //    保存
         chargingQueueRepository.save(errorQueue);
+
+        //    调度移到充电桩
+        for (int i = 0; i < len; i++) {
+            String carId = pile.consumeWaitingCar();
+            cars.add(carRepository.findByCarId(carId));
+        }
     }
 
 }
