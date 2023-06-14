@@ -54,7 +54,7 @@ public class Car {
     // NOTE: 这个属性暂时废弃，后面测试没有问题可以删除
     private Queue queue = Queue.UNQUEUED;
 
-    // TODO: 这个是所在队列的号码，因为可能是故障队列/等候区队列，不一定分配到了充电桩
+    //  这个是所在队列的号码，因为可能是故障队列/等候区队列，不一定分配到了充电桩
     private String queueNo;
 
     public enum Queue {

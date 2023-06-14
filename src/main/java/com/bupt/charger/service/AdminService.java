@@ -60,7 +60,10 @@ public class AdminService {
             throw new ApiException("充电桩已经是开启状态");
         }
         pile.setStatus(Pile.Status.FREE);
-
+        // 有几个空位就调度几次，防止有空余的没有被调度
+        for (int i = 0; i < pile.getCapacity(); i++) {
+            scheduleService.moveToChargingQueue();
+        }
         pilesRepository.save(pile);
 
     }
@@ -242,7 +245,7 @@ public class AdminService {
         //唤起后续调度
 
         //    如果是优先级故障，写下面语句
-        //    scheduleService.priorityErrorMoveQueue(pileId);
+        scheduleService.priorityErrorMoveQueue(pileId);
 
         //    如果是时间故障，写
         // scheduleService.timeErrorMoveQueue(pileId);
