@@ -18,8 +18,6 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import static java.lang.Math.min;
-
 /**
  * @author ll （ created: 2023-05-27 18:04 )
  */
@@ -264,6 +262,8 @@ public class ChargeService {
             }
             car.releaseChargingProcess();
             carRepository.save(car);
+            // 保存充电桩
+            pilesRepository.save(pile);
             // 叫号队列中下一辆车开始充电
             scheduleService.remindCarStartCharge(pile.getPileId());
 
@@ -308,7 +308,6 @@ public class ChargeService {
         // 结束充电后调用调度函数，将等候区的车辆移到充电区
         scheduleService.moveToChargingQueue();
     }
-
 
 
 }
