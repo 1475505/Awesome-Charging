@@ -305,6 +305,9 @@ public class ScheduleService {
         double chargeFee = calculator.getChargeFee(startTime, endTime, pileNo, amount);
         bill.setChargeFee(chargeFee);
         bill.setServiceFee(amount * pile.getServePrice());
+        // 导出详单
+        bill.exportBill(FormatUtils.getNowLocalDateTime().toString());
+
         // 保存
         billRepository.save(bill);
         chargeReqRepository.save(request);
