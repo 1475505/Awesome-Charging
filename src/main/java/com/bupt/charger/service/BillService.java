@@ -60,7 +60,13 @@ public class BillService {
             if (req.getStatus() != ChargeRequest.Status.DONE) continue;
             BillResponse billResponse = new BillResponse();
             ChargeRequest curReq = req;
-            Optional<Bill> billOptional = billRepository.findById(curReq.getId());
+            if (curReq.getBillId() == null) {
+                continue;
+            }
+            Optional<Bill> billOptional = billRepository.findById(curReq.getBillId());
+            if (billOptional.isEmpty()) {
+                throw new ApiException("没有找到详单" + curReq.getBillId());
+            }
             Bill bill = billOptional.get();
             billResponse.billId.add(bill.getId());
             billResponse.pileId.add(bill.getPileId());
@@ -74,10 +80,11 @@ public class BillService {
             LocalDateTime endTime = bill.getEndTime();
             while (curReq.isSuffered()) {
                 Long succReq = req.getSuccReqsList().get(0);
+                log.debug("发现请求" + curReq.getId() + "存在故障请求" + succReq);
                 Optional<ChargeRequest> succReqOptional = chargeReqRepository.findById(succReq);
                 curReq = succReqOptional.get();
                 recoveredRequests.add(curReq.getId());
-                billOptional = billRepository.findById(curReq.getId());
+                billOptional = billRepository.findById(curReq.getBillId());
                 bill = billOptional.get();
                 billResponse.billId.add(bill.getId());
                 billResponse.pileId.add(bill.getPileId());

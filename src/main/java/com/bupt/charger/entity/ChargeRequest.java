@@ -70,7 +70,7 @@ public class ChargeRequest {
     private String succReqs; //目前的设计，只存储一次。
 
     public boolean isSuffered() {
-        return !succReqs.isEmpty();
+        return succReqs != null && !succReqs.isEmpty();
     }
 
     public List<Long> getSuccReqsList() {
