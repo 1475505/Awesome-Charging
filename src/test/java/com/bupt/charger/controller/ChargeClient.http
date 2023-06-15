@@ -3,9 +3,9 @@ POST http://localhost:6480/user/request
 Content-Type: application/json
 
 {
-  "car_id": "hjycar",
-  "request_amount": 9.48,
-  "request_mode": "slow"
+  "car_id": "tt8",
+  "request_amount": 90,
+  "request_mode": "quick"
 }
 
 ### modify charge amount
@@ -13,8 +13,8 @@ POST http://localhost:6480/user/modifyAmount
 Content-Type: application/json
 
 {
-  "car_id": "",
-  "request_amount": 648.88
+  "car_id": "tt2",
+  "request_amount": 648
 }
 
 ### modify charge mode
@@ -22,7 +22,7 @@ POST http://localhost:6480/user/chMode
 Content-Type: application/json
 
 {
-  "car_id": "test",
+  "car_id": "tt1",
   "request_mode": "quick"
 }
 
@@ -31,7 +31,7 @@ POST http://localhost:6480/user/startCharging
 Content-Type: application/json
 
 {
-  "car_id": "test7"
+  "car_id": "tt5"
 }
 
 ### 结束充电
@@ -39,7 +39,7 @@ POST http://localhost:6480/user/stopCharging
 Content-Type: application/json
 
 {
-  "car_id": "tt6"
+  "car_id": "tt5"
 }
 
 

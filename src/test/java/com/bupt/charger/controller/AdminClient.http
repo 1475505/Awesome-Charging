@@ -1,0 +1,15 @@
+#### 管理员充电桩故障
+POST http://localhost:6480/admin/diePile
+Content-Type: application/json
+
+{
+  "pileId": "CFA"
+}
+
+#### 充电桩恢复
+POST http://localhost:6480/admin/startCharger
+Content-Type: application/json
+
+{
+  "pileId": "CFA"
+}
