@@ -285,8 +285,6 @@ public class ChargeService {
         bill.setChargeFee(chargeFee);
         bill.setServiceFee(amount * pile.getServePrice());
         billRepository.save(bill);
-        // 导出为csv文件
-        bill.exportBill(FormatUtils.getNowLocalDateTime().toString());
 
         request.setEndChargingTime(endTime);
         request.setStatus(ChargeRequest.Status.DONE);
