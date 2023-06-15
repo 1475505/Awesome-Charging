@@ -73,7 +73,8 @@ public class Pile {
 
         if (input != null && !input.isEmpty()) {
             String[] numberStrings = input.split(",");
-            return Arrays.asList(numberStrings);
+            resultList.addAll(Arrays.asList(numberStrings));
+            return resultList;
         }
         return resultList;
     }
@@ -125,6 +126,7 @@ public class Pile {
         int index = getQueueIdx(carId);
         if (index != -1) {
             List<String> qList = getQList();
+            System.out.println("测试index: " + index);
             qList.remove(index - 1);
             // 赋值回carQueue
             carQueue = String.join(",", qList);

@@ -31,7 +31,8 @@ public class ChargingQueue {
 
         if (input != null && !input.isEmpty()) {
             String[] numberStrings = input.split(",");
-            return Arrays.asList(numberStrings);
+            resultList.addAll(Arrays.asList(numberStrings));
+            return resultList;
         }
         return resultList;
     }

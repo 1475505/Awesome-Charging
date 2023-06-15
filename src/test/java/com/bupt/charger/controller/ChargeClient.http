@@ -39,7 +39,7 @@ POST http://localhost:6480/user/stopCharging
 Content-Type: application/json
 
 {
-  "car_id": "test7"
+  "car_id": "tt6"
 }
 
 
