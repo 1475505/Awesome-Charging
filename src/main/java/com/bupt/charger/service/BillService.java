@@ -11,7 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -56,7 +58,7 @@ public class BillService {
         List<ChargeRequest> chargeRequests = chargeReqRepository.findAllByCarIdOrderById(carId);
 
         for (ChargeRequest req : chargeRequests) {
-            if (recoveredRequests.contains(req.getId()))    continue;
+            if (recoveredRequests.contains(req.getId())) continue;
             if (req.getStatus() != ChargeRequest.Status.DONE) continue;
             BillResponse billResponse = new BillResponse();
             ChargeRequest curReq = req;
