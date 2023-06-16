@@ -1,5 +1,9 @@
 ### 10. 按天获取账单（以开始时间为准）
-GET http://localhost:6480/user/checkBill?car_id=tt2
+<<<<<<<<< Temporary merge branch 1
+GET http://localhost:6480/user/checkBill?car_id=tt6
+=========
+GET http://localhost:6480/user/checkBill?car_id=tt1
+>>>>>>>>> Temporary merge branch 2
 
 ### 11. 获取详单
 GET http://localhost:6480/user/getBill?bill_id=5
