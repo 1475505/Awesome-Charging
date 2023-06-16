@@ -135,7 +135,7 @@ public class Estimator {
         }
         result = result.plus(estimateCarLeftChargeTime(pile.getQList().get(0)));
         for (int i = 1; i < idx; i++) {
-            result = result.plus(estimateCarChargeTime(pile.getQList().get(idx)));
+            result = result.plus(estimateCarChargeTime(pile.getQList().get(i)));
         }
         return result;
     }

@@ -75,7 +75,7 @@ public class Calculator {
                 feePerUnitTime = peak_price;
             } else if ((time.getHour() >= 7 && time.getHour() < 10) ||
                     (time.getHour() >= 15 && time.getHour() < 18) ||
-                    (time.getHour() >= 18 && time.getHour() < 21)) {//平时
+                    (time.getHour() >= 21 && time.getHour() < 23)) {//平时
                 feePerUnitTime = usual_price;
             } else if ((time.getHour() == 23) ||
                     (time.getHour() >= 0 && time.getHour() < 7)) {//谷时
@@ -88,6 +88,8 @@ public class Calculator {
             if (remainingAmount >= 0) {
                 // 汽车未充满
                 totalFee += feePerUnitTime / 360;
+            }else {
+                break ;
             }
         }
 
