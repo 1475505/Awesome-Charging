@@ -4,8 +4,15 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author ll （ created: 2023-05-27 20:24 )
@@ -39,4 +46,5 @@ public class Bill {
     public long getChargeDuration() {
         return Duration.between(startTime, endTime).getSeconds();
     }
+
 }
