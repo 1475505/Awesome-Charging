@@ -85,6 +85,7 @@ public class ChargeService {
         chargeReqRepository.save(chargeRequest);
 
         car.setHandingReqId(chargeRequest.getId());
+        carRepository.save(car);
 
         // 有空位则移到等候区
         // 加入等待队列

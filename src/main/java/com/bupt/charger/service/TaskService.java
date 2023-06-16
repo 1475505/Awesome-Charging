@@ -58,7 +58,7 @@ public class TaskService {
     }
 
     private void executeTask(String carId, String message) {
-        log.info("启动任务：通知车辆开始充电 -- CarId=" + carId);
+        log.info("启动任务：通知车辆 -- CarId=" + carId);
         User user = userRepository.findByCarId(carId);
         wsService.sendToUser(user.getUsername(), message);
     }

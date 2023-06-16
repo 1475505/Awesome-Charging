@@ -49,7 +49,7 @@ public class Calculator {
         var pileMode = pile.getMode();
 
         double feePerUnitTime = 1; // 单位时间费用（这里假定为1元每小时）
-        double powerPerUnitTime;
+        double powerPerUnitTime = 30;
 
         double power;
         if (pileMode == Pile.Mode.F)//这里是快充
@@ -81,18 +81,12 @@ public class Calculator {
                     (time.getHour() >= 0 && time.getHour() < 7)) {//谷时
                 feePerUnitTime = valley_price;
             }
-            //所有单位费用均加上服务费
-            feePerUnitTime += serve_price;
 
             remainingAmount = remainingAmount - powerPerUnitTime; // 剩余电量
-            if (remainingAmount >= 0) {
-                // 汽车未充满
-                totalFee += feePerUnitTime / 360;
-            }else {
-                break ;
-            }
+            totalFee += feePerUnitTime / 360;
+            if (remainingAmount < 0)
+                break;
         }
-
         return totalFee;
     }
 
