@@ -11,5 +11,5 @@ POST http://localhost:6480/admin/startCharger
 Content-Type: application/json
 
 {
-  "pileId": "CFA"
+  "pileId": "CFB"
 }

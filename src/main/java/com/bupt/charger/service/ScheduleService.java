@@ -286,14 +286,11 @@ public class ScheduleService {
         String pileNo = car.getPileId();
         Pile pile = pilesRepository.findByPileId(pileNo);
 
-        request.setEndChargingTime(endTime);
-        request.setStatus(ChargeRequest.Status.DONE);
 
         //计算实际充电量
         LocalDateTime startTime = request.getStartChargingTime();
         double amount = calculator.getChargeAmount(startTime, endTime, request.getRequestMode());
         amount = Double.min(amount, request.getRequestAmount());
-        request.setDoneAmount(amount);
 
         // 生成详单
         Bill bill = new Bill();
@@ -305,7 +302,13 @@ public class ScheduleService {
         double chargeFee = calculator.getChargeFee(startTime, endTime, pileNo, amount);
         bill.setChargeFee(chargeFee);
         bill.setServiceFee(amount * pile.getServePrice());
+        billRepository.save(bill);
 
+        // 设置旧订单
+        request.setBillId(bill.getId());
+        request.setEndChargingTime(endTime);
+        request.setStatus(ChargeRequest.Status.DONE);
+        request.setDoneAmount(amount);
         // 不需要设置车辆状态，因为之后进入调度队列自动设置
 
         // 需要为该车重建一个请求，传入没有充的电量
@@ -314,14 +317,13 @@ public class ScheduleService {
         newChargeRequest.setRequestMode(request.getRequestMode());
         newChargeRequest.setStatus(ChargeRequest.Status.DOING);
         newChargeRequest.setCarId(carId);
-        // 旧请求连接到新请求
-        request.setSuccReqs(newChargeRequest.getId().toString());
-        
-        //    保存
-        billRepository.save(bill);
-        chargeReqRepository.save(request);
         chargeReqRepository.save(newChargeRequest);
 
+        // 旧请求连接到新请求中
+        request.addSuccReqs(newChargeRequest.getId());
+
+        // 保存
+        chargeReqRepository.save(request);
         car.setHandingReqId(newChargeRequest.getId());
         carRepository.save(car);
     }
@@ -380,7 +382,7 @@ public class ScheduleService {
             return;
         }
 
-        
+
         ScheduleService.isStopWaitArea = true;
         // 调用故障停止充电函数，将第一个正在充电的车停止充电
         Car topCar = carRepository.findByCarId(pile.getQList().get(0));
