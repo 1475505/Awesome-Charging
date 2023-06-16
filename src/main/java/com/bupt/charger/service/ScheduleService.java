@@ -378,6 +378,7 @@ public class ScheduleService {
             return;
         }
 
+        
         ScheduleService.isStopWaitArea = true;
         // 调用故障停止充电函数，将第一个正在充电的车停止充电
         Car topCar = carRepository.findByCarId(pile.getQList().get(0));
