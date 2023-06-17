@@ -49,7 +49,7 @@ public class UserService {
     }
 
     public UserLoginResponse login(String username, String password) throws LoginException {
-        System.out.println("User try to login: " + username);
+        log.info("User try to login:" + username);
         User user = userRepository.findByUsernameAndPassword(username, password);
         if (user == null) {
             throw new LoginException("用户名或密码错误");

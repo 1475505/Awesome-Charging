@@ -3,7 +3,7 @@ POST http://localhost:6480/admin/offCharger
 Content-Type: application/json
 
 {
-  "pile_id": 3
+  "pile_id": 0
 }
 
 #### 充电桩恢复

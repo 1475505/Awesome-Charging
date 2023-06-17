@@ -6,7 +6,8 @@ import com.bupt.charger.entity.Pile;
 import com.bupt.charger.repository.PilesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
+import lombok.extern.java.Log;
+import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -34,6 +35,7 @@ public class Calculator {
 
         return seconds / 3600.0 * power;
     }
+
 
     public double getChargeFee(LocalDateTime startTime, LocalDateTime endTime, String pileId, double amount) {
         Pile pile = pilesRepository.findByPile(pileId);
@@ -84,14 +86,15 @@ public class Calculator {
                 feePerUnitTime = valley_price;
             }
 
+
             remainingAmount = remainingAmount - powerPerUnitTime; // 剩余电量
             totalFee += feePerUnitTime * powerPerUnitTime;
-            System.out.println("fee:"+feePerUnitTime);
-            System.out.println("power:"+powerPerUnitTime);
             if (remainingAmount < 0)
                 break;
         }
-        return totalFee;
+        DecimalFormat decimalFormat = new DecimalFormat("#.00");
+        double formattedTotalFee = Double.parseDouble(decimalFormat.format(totalFee));
+        return formattedTotalFee;
     }
 
 
