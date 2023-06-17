@@ -56,7 +56,7 @@ public class AdminPileController {
 
     @GetMapping("/checkCharger")
     @Operation(summary = "管理员查看充电桩状态")
-    public ResponseEntity<?> checkCharger(@RequestParam("pileId") String pileId) {
+    public ResponseEntity<?> checkCharger(@RequestParam("pile_id") String pileId) {
         try {
             var response = adminService.checkCharger(pileId);
             return ResponseEntity.ok().body(new ApiResp(response));
@@ -67,7 +67,7 @@ public class AdminPileController {
 
     @GetMapping("/checkChargerQueue")
     @Operation(summary = "管理员查看指定充电桩队列状态")
-    public ResponseEntity<?> checkChargerQueue(@RequestParam("pileId") String pileId) {
+    public ResponseEntity<?> checkChargerQueue(@RequestParam("pile_id") String pileId) {
         try {
             var response = adminService.checkChargerQueue(pileId);
             return ResponseEntity.ok().body(new ApiResp(response));
