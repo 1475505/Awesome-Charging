@@ -16,4 +16,12 @@ public interface PilesRepository extends JpaRepository<Pile, Long>{
 
         return findByPileId(piles[pile]);
     }
+
+    default Pile findByPile(String pile) {
+        if (Character.isDigit(pile.charAt(0))) {
+            return findByPileId(Integer.parseInt(pile));
+        } else {
+            return findByPileId(pile);
+        }
+    }
 }

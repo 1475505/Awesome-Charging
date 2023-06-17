@@ -99,7 +99,7 @@ public class CarService {
             resp.setCarNumberBeforePosition(0);
             resp.setQueueNum(car.getPileId()); //充电桩队列名是不是和充电桩名字一样
         } else if (car.getStatus() == Car.Status.waiting && car.getArea() == Car.Area.CHARGING) {
-            Pile pile = pilesRepository.findByPileId(car.getPileId());
+            Pile pile = pilesRepository.findByPile(car.getPileId());
             if (pile == null) {
                 throw new ApiException("车辆在充电区等待但尚未被分配充电桩队列，请联系客服");
             }

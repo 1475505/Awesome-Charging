@@ -101,7 +101,7 @@ public class ChargeService {
             var queueWaitingTime = estimator.estimateQueueWaitingTime(carId);
             response.setRequestTime(queueWaitingTime.getSeconds());
         } else if (car.getArea() == Car.Area.CHARGING) {
-            Pile pile = pilesRepository.findByPileId(car.getPileId());
+            Pile pile = pilesRepository.findByPile(car.getPileId());
             int idx = pile.getQueueIdx(carId);
             if (idx == 1) {
                 taskService.scheduleTask(carId, Duration.ZERO, "可以开始充电啦");
@@ -183,7 +183,7 @@ public class ChargeService {
 
         // 检测车辆是对应队列的第一个才可以继续
         if (car.canCharging() &&
-                !car.getCarId().equals(pilesRepository.findByPileId(car.getPileId()).getQList().get(0))) {
+                !car.getCarId().equals(pilesRepository.findByPile(car.getPileId()).getQList().get(0))) {
             throw new ApiException("车辆目前的状态不可以开始充电哦");
         }
         var requestOptionalal = chargeReqRepository.findById(car.getHandingReqId());
@@ -195,7 +195,7 @@ public class ChargeService {
         // 包含对car、chargeRequest、pile、queue等的调度和更新。
         // 1. 首先获取分配到的充电桩，basicSchedule函数应该是帮我们更新好了调度结果，并且已在充电桩入队。
         String targetPile = car.getPileId();
-        Pile pile = pilesRepository.findByPileId(targetPile);
+        Pile pile = pilesRepository.findByPile(targetPile);
         if (pile == null) {
             throw new ApiException("车辆没有被分配到的充电桩");
         }
@@ -250,7 +250,7 @@ public class ChargeService {
         }
 
         String pileNo = car.getPileId();
-        Pile pile = pilesRepository.findByPileId(pileNo);
+        Pile pile = pilesRepository.findByPile(pileNo);
 
         // 车辆在充电区等候时取消充电，加宇移除相关队列
         if (car.getArea() == Car.Area.CHARGING && car.getStatus() != Car.Status.charging) {

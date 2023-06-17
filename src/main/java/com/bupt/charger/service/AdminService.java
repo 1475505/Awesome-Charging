@@ -56,7 +56,7 @@ public class AdminService {
     public void startPile(StartPileRequest startPileRequest) throws ApiException {
         log.info("Admin try to start pile: " + startPileRequest.getPileId());
         var pileId = startPileRequest.getPileId();
-        Pile pile = pilesRepository.findByPileId(pileId);
+        Pile pile = pilesRepository.findByPile(pileId);
         if (pile == null) {
             throw new ApiException("不存在这个充电桩！");
         }
@@ -75,7 +75,7 @@ public class AdminService {
     public void shutDownPile(ShutDownPileRequest shutDownPileRequest) throws ApiException {
         log.info("Admin try to shut down pile: " + shutDownPileRequest.getPileId());
         var pileId = shutDownPileRequest.getPileId();
-        Pile pile = pilesRepository.findByPileId(pileId);
+        Pile pile = pilesRepository.findByPile(pileId);
         if (pile == null) {
             throw new ApiException("不存在这个充电桩！");
         }
@@ -98,7 +98,7 @@ public class AdminService {
     public void setPileParameters(SetPileParametersRequest setPileParametersRequest) throws ApiException {
         log.info("Admin try to set pile parameters: " + setPileParametersRequest.getPileId());
         var pileId = setPileParametersRequest.getPileId();
-        Pile pile = pilesRepository.findByPileId(pileId);
+        Pile pile = pilesRepository.findByPile(pileId);
         if (pile == null) {
             throw new ApiException("不存在这个充电桩！");
         }
@@ -129,7 +129,7 @@ public class AdminService {
     public CheckChargerResponse checkCharger(String pileId) {
         log.info("Admin try to check charger : " + pileId);
         CheckChargerResponse response = new CheckChargerResponse();
-        Pile pile = pilesRepository.findByPileId(pileId);
+        Pile pile = pilesRepository.findByPile(pileId);
         if (pile == null) {
             throw new ApiException("未找到此充电桩");
         }
@@ -149,7 +149,7 @@ public class AdminService {
         log.info("Admin try to check charger queue: " + pileId);
 
         CheckChargerQueueResponse response = new CheckChargerQueueResponse();
-        Pile pile = pilesRepository.findByPileId(pileId);
+        Pile pile = pilesRepository.findByPile(pileId);
 
         if (pile == null) {
             throw new ApiException("未找到此充电桩");
@@ -251,7 +251,7 @@ public class AdminService {
     public void diePile(DiePileRequest diePileRequest) throws ApiException {
         log.info("Admin try to die pile: " + diePileRequest.getPileId());
         var pileId = diePileRequest.getPileId();
-        Pile pile = pilesRepository.findByPileId(pileId);
+        Pile pile = pilesRepository.findByPile(pileId);
         if (pile == null) {
             throw new ApiException("不存在这个充电桩！");
         }
