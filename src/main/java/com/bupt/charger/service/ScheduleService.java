@@ -107,7 +107,7 @@ public class ScheduleService {
         // 调用这个函数的情况：1. 空队列进来了新车(即最短时间调度函数检测到这个事件) 2. 有车辆结束充电，通知下一个。
 
         //     如果队列里面没有车辆，那么就不需要提醒；不然提醒指定队列的第一辆车开始充电
-        Pile pile = pilesRepository.findByPileId(pileId);
+        Pile pile = pilesRepository.findByPile(pileId);
         if (pile.getQCnt() == 0) {
             return false;
         }
@@ -284,7 +284,7 @@ public class ScheduleService {
         ChargeRequest request = requestOptionalal.get();
 
         String pileNo = car.getPileId();
-        Pile pile = pilesRepository.findByPileId(pileNo);
+        Pile pile = pilesRepository.findByPile(pileNo);
 
 
         //计算实际充电量
@@ -336,7 +336,7 @@ public class ScheduleService {
     public void priorityErrorMoveQueue(String pileId) {
         //   优先级调度就是将对应的原充电桩队列转移到相应模式的故障队列
         //    暂停正常移进充电区服务
-        Pile pile = pilesRepository.findByPileId(pileId);
+        Pile pile = pilesRepository.findByPile(pileId);
         // 如果队列为空，则不执行
         if (pile.getQCnt() == 0) {
             return;
@@ -376,7 +376,7 @@ public class ScheduleService {
 
     //    故障-时间顺序调度移动队列
     public void timeErrorMoveQueue(String pileId) {
-        Pile pile = pilesRepository.findByPileId(pileId);
+        Pile pile = pilesRepository.findByPile(pileId);
 
         if (pile.getQCnt() == 0) {
             return;

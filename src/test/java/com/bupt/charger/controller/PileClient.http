@@ -3,7 +3,7 @@ POST http://localhost:6480/admin/startCharger
 Content-Type: application/json
 
 {
-  "pileId": "test"
+  "pile_id": 0
 }
 
 ### correct shut down pile

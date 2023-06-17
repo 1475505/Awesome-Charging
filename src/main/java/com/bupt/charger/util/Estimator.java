@@ -120,7 +120,7 @@ public class Estimator {
 
     public Duration estimateChargingQueueWaitingTime(String carId) {
         Car car = carRepository.findByCarId(carId);
-        Pile pile = pilesRepository.findByPileId(car.getPileId());
+        Pile pile = pilesRepository.findByPile(car.getPileId());
         if (pile == null) {
             throw new ApiException("车辆不在充电区，或尚未被分配充电桩队列，请联系客服");
         }

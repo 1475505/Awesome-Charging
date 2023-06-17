@@ -36,7 +36,7 @@ public class Calculator {
     }
 
     public double getChargeFee(LocalDateTime startTime, LocalDateTime endTime, String pileId, double amount) {
-        Pile pile = pilesRepository.findByPileId(pileId);
+        Pile pile = pilesRepository.findByPile(pileId);
         // 接下来是判断time在哪个时间段，切割计费。注意以pile的功率为准。
         // Attention: 根据amount算时长，endTime暂时理解成不需要
         // TODO:这里暂时没测试，不知道正确性如何
