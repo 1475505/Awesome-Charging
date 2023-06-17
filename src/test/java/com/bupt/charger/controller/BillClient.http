@@ -7,3 +7,6 @@ GET http://localhost:6480/user/checkBill?car_id=tt1
 
 ### 11. 获取详单
 GET http://localhost:6480/user/getBill?bill_id=5
+
+### 测试导出账单和详单
+GET http://localhost:6480/user/exportAllBill
