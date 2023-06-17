@@ -32,16 +32,16 @@ public class AdminPileController {
         }
     }
 
-    @PostMapping("/offCharger")
-    @Operation(summary = "管理员关闭充电桩")
-    public ResponseEntity<Object> shutDownPile(@RequestBody ShutDownPileRequest request) {
-        try {
-            adminService.shutDownPile(request);
-            return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
-        } catch (Exception e) {
-            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
-        }
-    }
+//    @PostMapping("/offCharger")
+//    @Operation(summary = "管理员关闭充电桩")
+//    public ResponseEntity<Object> shutDownPile(@RequestBody ShutDownPileRequest request) {
+//        try {
+//            adminService.shutDownPile(request);
+//            return ResponseEntity.ok().body(new ApiResp(0, "请求成功"));
+//        } catch (Exception e) {
+//            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
+//        }
+//    }
 
     @PostMapping("/setParameters")
     @Operation(summary = "管理员修改充电桩状态")
@@ -76,7 +76,7 @@ public class AdminPileController {
         }
     }
 
-    @PostMapping("/diePile")
+    @PostMapping("/offCharger")
     @Operation(summary = "使充电桩故障")
     public ResponseEntity<Object> diePile(@RequestBody DiePileRequest request) {
         try {

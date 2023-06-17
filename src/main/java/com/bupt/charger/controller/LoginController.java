@@ -20,7 +20,7 @@ import javax.security.auth.login.LoginException;
  */
 @RestController
 @Tag(name = "登录")
-@RequestMapping("/user/login")
+@RequestMapping("/login")
 public class LoginController {
 
     @Autowired
