@@ -10,6 +10,7 @@ import com.bupt.charger.repository.CarRepository;
 import com.bupt.charger.repository.ChargeReqRepository;
 import com.bupt.charger.repository.ChargingQueueRepository;
 import com.bupt.charger.repository.PilesRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ import java.time.Duration;
  * @author ll （ created: 2023-05-31 20:39 )
  */
 @Component
+@Slf4j
 public class Estimator {
 
     private final CarRepository carRepository;

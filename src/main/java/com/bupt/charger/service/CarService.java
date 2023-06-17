@@ -55,6 +55,9 @@ public class CarService {
     // -1 means error
     public double updateDoneAmount(String carId) {
         Car car = carRepository.findByCarId(carId);
+        if (car.getStatus() != Car.Status.charging) {
+            return 0;
+        }
         var reqId = car.getHandingReqId();
         var requestOptional = chargeReqRepository.findById(reqId);
         if (requestOptional.isEmpty()) {
