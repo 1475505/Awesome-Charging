@@ -7,7 +7,7 @@ public class SysTimerTask extends TimerTask {
 
     @Override
     public void run() {
-        SysTimer.setStartTime(new Date(SysTimer.getStartTime().getTime() + 1000 * 20));
+        SysTimer.setStartTime(new Date(SysTimer.getStartTime().getTime() + 1000 * 60));
 //        System.out.println("current time: " + SysTimer.getStartTime());
     }
 }
