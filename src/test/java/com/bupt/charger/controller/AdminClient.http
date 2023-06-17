@@ -1,9 +1,9 @@
 #### 管理员充电桩故障
-POST http://localhost:6480/admin/diePile
+POST http://localhost:6480/admin/offCharger
 Content-Type: application/json
 
 {
-  "pileId": "CFA"
+  "pile_id": 1
 }
 
 #### 充电桩恢复
@@ -13,3 +13,6 @@ Content-Type: application/json
 {
   "pileId": "CFB"
 }
+
+#### 查询当前时间
+GET http://localhost:6480/timeNow

@@ -3,6 +3,7 @@ package com.bupt.charger.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -12,5 +13,5 @@ import java.util.Date;
 @Data
 public class GetTimeNowResponse extends Resp {
     @JsonProperty("timestamp")
-    Date timestamp;
+    LocalDateTime timestamp;
 }

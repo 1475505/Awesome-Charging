@@ -70,7 +70,8 @@ public class Calculator {
         for (LocalDateTime time = startTime; time.isBefore(endTime); time = time.plusSeconds(10)) {
             System.out.println("Hour:"+time.getHour());
             //这里给费用赋值
-            int h = (time.getHour() + 8 )% 24;
+            // int h = (time.getHour() + 8 )% 24;
+            int h = time.getHour();
             if ((h >= 10 && h < 15) ||
                     (h >= 18 && h < 21)) {//峰时
                 feePerUnitTime = peak_price;

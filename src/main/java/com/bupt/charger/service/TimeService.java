@@ -7,11 +7,13 @@ package com.bupt.charger.service;
 
 import com.bupt.charger.exception.ApiException;
 import com.bupt.charger.response.GetTimeNowResponse;
+import com.bupt.charger.util.FormatUtils;
 import com.bupt.charger.util.SysTimer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Service
@@ -24,10 +26,10 @@ public class TimeService {
     public GetTimeNowResponse getTimeNow() throws ApiException {
         log.info("Front end try to get time.");
         GetTimeNowResponse response = new GetTimeNowResponse();
-        Date nowTime = sysTimer.getStartTime();
+        //Date nowTime = sysTimer.getStartTime();
+        LocalDateTime nowTime = FormatUtils.getNowLocalDateTime();
         response.setTimestamp(nowTime);
         return response;
-
     }
 
 }
