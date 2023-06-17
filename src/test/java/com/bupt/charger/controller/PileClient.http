@@ -34,4 +34,4 @@ Content-Type: application/json
 GET localhost:6480/admin/checkCharger?pileId=test
 
 ### Check the queue of a pile(get)
-GET localhost:6480/admin/checkChargerQueue?pileId=test
+GET localhost:6480/admin/checkChargerQueue?pile_id=CFB

@@ -2,16 +2,16 @@ package com.bupt.charger.service;
 
 import com.bupt.charger.entity.Admin;
 import com.bupt.charger.entity.Car;
+import com.bupt.charger.entity.ChargeRequest;
 import com.bupt.charger.entity.Pile;
 import com.bupt.charger.exception.ApiException;
 import com.bupt.charger.repository.AdminRepository;
 import com.bupt.charger.repository.CarRepository;
+import com.bupt.charger.repository.ChargeReqRepository;
 import com.bupt.charger.repository.PilesRepository;
 import com.bupt.charger.request.*;
-import com.bupt.charger.response.AdminLoginResponse;
-import com.bupt.charger.response.CheckChargerQueueResponse;
-import com.bupt.charger.response.CheckChargerResponse;
-import com.bupt.charger.response.InitDataBaseResponse;
+import com.bupt.charger.response.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.security.auth.login.LoginException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author wyf （ created: 2023-05-26 13:27 )
@@ -32,6 +33,9 @@ public class AdminService {
 
     @Autowired
     private ScheduleService scheduleService;
+
+    @Autowired
+    private ChargeReqRepository chargeReqRepository;
 
     public AdminLoginResponse login(String adminName, String password) throws LoginException {
         log.info("Admin try to login: " + adminName);
@@ -141,7 +145,7 @@ public class AdminService {
     @Autowired
     private CarRepository carRepository;
 
-    public CheckChargerQueueResponse checkChargerQueue(String pileId) {
+    public  List<CarResponse> checkChargerQueue(String pileId) {
         log.info("Admin try to check charger queue: " + pileId);
 
         CheckChargerQueueResponse response = new CheckChargerQueueResponse();
@@ -153,16 +157,29 @@ public class AdminService {
 
         List<String> qEles = pile.getQList();
         List<Car> cars = new ArrayList<>();
+        List<CarResponse> carResponseList = new ArrayList<>();
+        String car_id;
+        double request_amount;
+        int wait_time;
         log.info("cars: " + qEles);
         for (String s : qEles) {
             Car car = carRepository.findByCarId(s);
             if (car != null) {
                 cars.add(car);
+                car_id=car.getCarId();
+                Optional<ChargeRequest> chargeRequestOptional = chargeReqRepository.findById(car.getHandingReqId());
+                if (chargeRequestOptional.isEmpty()) {
+                    throw new ApiException("chargeRequestOptional is empty");
+                }
+                ChargeRequest chargeRequest = chargeRequestOptional.get();
+                request_amount=chargeRequest.getRequestAmount();
+
+                CarResponse carResponse=new CarResponse(22,car_id,request_amount,0);
+                carResponseList.add(carResponse);
             }
         }
-        response.setCars(cars);
 
-        return response;
+        return carResponseList;
     }
 
 
