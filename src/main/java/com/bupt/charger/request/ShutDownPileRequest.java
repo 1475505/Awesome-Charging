@@ -10,6 +10,6 @@ import lombok.ToString;
 @Data
 @ToString
 public class ShutDownPileRequest {
-    @JsonProperty("pileId")
+    @JsonProperty("pile_id")
     private String pileId;
 }

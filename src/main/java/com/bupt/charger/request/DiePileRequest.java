@@ -10,7 +10,7 @@ import lombok.ToString;
 @Data
 @ToString
 public class DiePileRequest {
-    @JsonProperty("pileId")
+    @JsonProperty("pile_id")
     private String pileId;
 
 }
