@@ -254,7 +254,7 @@ public class ChargeService {
 
         // 车辆在充电区等候时取消充电，加宇移除相关队列
         if (car.getArea() == Car.Area.CHARGING && car.getStatus() != Car.Status.charging) {
-            request.setStatus(ChargeRequest.Status.CANCELED);
+            request.setStatus(ChargeRequest.Status.DONE);
             chargeReqRepository.save(request);
             // 移除从充电区队列删除
             if (!pile.removeCar(carId)) {
