@@ -1,0 +1,7 @@
+### admin init database
+POST http://localhost:6480/admin/initDataBase
+Content-Type: application/json
+
+{
+
+}

@@ -1,0 +1,18 @@
+#### 管理员充电桩故障
+POST http://localhost:6480/admin/offCharger
+Content-Type: application/json
+
+{
+  "pile_id": 0
+}
+
+#### 充电桩恢复
+POST http://localhost:6480/admin/startCharger
+Content-Type: application/json
+
+{
+  "pile_id": 0
+}
+
+#### 查看充电桩状态队列
+GET http://localhost:6480/admin/checkChargerQueue?pile_id=0

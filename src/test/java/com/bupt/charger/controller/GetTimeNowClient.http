@@ -1,0 +1,2 @@
+### get time
+GET http://localhost:6480/timeNow
