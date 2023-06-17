@@ -39,4 +39,14 @@ public class UserBillController {
             return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
         }
     }
+
+    @GetMapping("/exportAllBill")
+    public ResponseEntity<?> exportAllBill() {
+        try {
+            bilService.exportAll(); // 这个函数没有返回值
+            return ResponseEntity.ok().body(new ApiResp());
+        } catch (Exception e) {
+            return ResponseEntity.ok().body(new ApiResp(1, e.getMessage()));
+        }
+    }
 }

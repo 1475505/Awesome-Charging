@@ -82,8 +82,6 @@ public class BillService {
             double chargeFee = bill.getChargeFee();
             double serviceFee = bill.getServiceFee();
             LocalDateTime endTime = bill.getEndTime();
-            // 导出详单到文件中
-            exportBill(bill);
             while (curReq.isSuffered()) {
                 Long succReq = req.getSuccReqsList().get(0);
                 log.debug("发现请求" + curReq.getId() + "存在故障请求" + succReq);
@@ -100,10 +98,6 @@ public class BillService {
                 chargeFee += bill.getChargeFee();
                 serviceFee += bill.getServiceFee();
                 endTime = bill.getEndTime();
-
-                // 导出详单到文件中
-                exportBill(bill);
-
             }
             billResponse.setEndTime(FormatUtils.LocalDateTime2Long(endTime));
             billResponse.setChargeAmount(chargeAmount);
@@ -112,10 +106,6 @@ public class BillService {
             billResponse.setServiceFee(serviceFee);
             billResponse.setTotalFee(chargeFee + serviceFee);
             response.getBills().add(billResponse);
-
-            // 一个billResponse中包含了一次充电的所有详单，相当于一个账单
-            //    导出账单
-            exportOrder(billResponse);
         }
         return response;
     }
@@ -182,7 +172,72 @@ public class BillService {
         return response;
     }
 
-    //    导出账单到本地文件
+//    导出所有详单，账单函数入口
+    public void exportAll() {
+
+        AllBillsResponse response = new AllBillsResponse();
+        Set<Long> recoveredRequests = new TreeSet<>();
+        List<ChargeRequest> chargeRequests = chargeReqRepository.findAll();
+
+        for (ChargeRequest req : chargeRequests) {
+            if (recoveredRequests.contains(req.getId())) continue;
+            if (req.getStatus() != ChargeRequest.Status.DONE) continue;
+            BillResponse billResponse = new BillResponse();
+            ChargeRequest curReq = req;
+            if (curReq.getBillId() == null) {
+                continue;
+            }
+            Optional<Bill> billOptional = billRepository.findById(curReq.getBillId());
+            if (billOptional.isEmpty()) {
+                throw new ApiException("没有找到详单" + curReq.getBillId());
+            }
+            Bill bill = billOptional.get();
+            billResponse.billId.add(bill.getId());
+            billResponse.pileId.add(bill.getPileId());
+            billResponse.setDate(bill.getStartTime().toLocalDate().toString());
+            billResponse.setCarId(bill.getCarId());
+            billResponse.setStartTime(FormatUtils.LocalDateTime2Long(bill.getStartTime()));
+            double chargeAmount = bill.getChargeAmount();
+            long chargeDuration = bill.getChargeDuration();
+            double chargeFee = bill.getChargeFee();
+            double serviceFee = bill.getServiceFee();
+            LocalDateTime endTime = bill.getEndTime();
+//            导出该详单
+            exportBill(bill);
+            while (curReq.isSuffered()) {
+                Long succReq = req.getSuccReqsList().get(0);
+                log.debug("发现请求" + curReq.getId() + "存在故障请求" + succReq);
+                Optional<ChargeRequest> succReqOptional = chargeReqRepository.findById(succReq);
+                curReq = succReqOptional.get();
+                recoveredRequests.add(curReq.getId());
+                billOptional = billRepository.findById(curReq.getBillId());
+                bill = billOptional.get();
+                billResponse.billId.add(bill.getId());
+                billResponse.pileId.add(bill.getPileId());
+
+                chargeAmount += bill.getChargeAmount();
+                chargeDuration += bill.getChargeDuration();
+                chargeFee += bill.getChargeFee();
+                serviceFee += bill.getServiceFee();
+                endTime = bill.getEndTime();
+//                导出该详单
+                exportBill(bill);
+            }
+            billResponse.setEndTime(FormatUtils.LocalDateTime2Long(endTime));
+            billResponse.setChargeAmount(chargeAmount);
+            billResponse.setChargeDuration(chargeDuration);
+            billResponse.setChargeFee(chargeFee);
+            billResponse.setServiceFee(serviceFee);
+            billResponse.setTotalFee(chargeFee + serviceFee);
+            response.getBills().add(billResponse);
+
+            // 一个billResponse中包含了一次充电的所有详单，相当于一个账单
+            //    导出账单
+            exportOrder(billResponse);
+        }
+    }
+
+    //    导出详单到本地文件
     public void exportBill(Bill bill) {
         String fileName = "./详单.csv";
         // 按顺序添加字符串
@@ -228,7 +283,7 @@ public class BillService {
         }
     }
 
-    //  导出账单到本地
+    //  导出指定账单到本地
     public void exportOrder(BillResponse billResponse) {
         String fileName = "./账单.csv";
         //    按顺序添加字符串
